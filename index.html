@@ -116,9 +116,11 @@
                         <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Total Produksi</label>
                         <div class="relative flex items-center bg-slate-50 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden border border-transparent focus-within:border-primary-100 shadow-sm">
                             <i class="ph ph-weight absolute left-4 text-slate-400 text-xl pointer-events-none"></i>
-                            <input type="number" id="calc-jumlah" step="0.01" min="0.01" placeholder="Masukkan jumlah" class="flex-1 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
+                            <!-- Menambahkan min-w-0 agar input tidak mendorong elemen lain keluar, dan mengubah step menjadi 0.001 -->
+                            <input type="number" id="calc-jumlah" step="0.001" min="0.001" placeholder="Masukkan jumlah" class="flex-1 min-w-0 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
                             <div class="border-l border-slate-200 h-8"></div>
-                            <div class="relative">
+                            <!-- Menambahkan shrink-0 agar dropdown tidak tertekan -->
+                            <div class="relative shrink-0">
                                 <select id="calc-satuan" class="bg-transparent text-slate-700 font-semibold py-3.5 pl-4 pr-10 outline-none cursor-pointer appearance-none hover:text-slate-900 transition-colors">
                                     <option value="kg">Kg</option>
                                     <option value="gram">Gram</option>
@@ -193,7 +195,8 @@
                             <input type="text" id="input-nama-bahan" placeholder="Nama Bahan (Cth: Tepung Terigu)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
                             
                             <div class="relative">
-                                <input type="number" id="input-jumlah-bahan" step="0.1" min="0.1" placeholder="Jumlah Kebutuhan" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 pl-4 pr-16 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
+                                <!-- Mengubah step dan min menjadi 0.001 agar mendukung 3 angka di belakang koma -->
+                                <input type="number" id="input-jumlah-bahan" step="0.001" min="0.001" placeholder="Jumlah Kebutuhan" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 pl-4 pr-16 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
                                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Gram</span>
                             </div>
 
@@ -286,8 +289,8 @@
         }
 
         function formatNumber(num) {
-            // Mengubah 1500.5 menjadi "1.500,5"
-            return num.toLocaleString('id-ID'); 
+            // Mengatur maksimal pecahan (angka di belakang koma) menjadi 3
+            return num.toLocaleString('id-ID', { maximumFractionDigits: 3 }); 
         }
 
         // --- 3. Rendering ---
