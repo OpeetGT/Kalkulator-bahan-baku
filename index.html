@@ -1,175 +1,239 @@
-
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Kalkulator Bahan Baku</title>
+    <title>Kalkulator Bahan Baku</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons (Modern Minimalist Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind Config & Custom Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Custom styles untuk transisi yang mulus */
-        .tab-content {
+        /* Smooth Fade & Slide Animations */
+        .view-section {
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .tab-content.active {
+        .view-section.active {
             display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            opacity: 1;
+            transform: translateY(0);
         }
         
-        /* Notifikasi Toast */
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Hide Number Input Arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Glassmorphism Toast */
         #toast {
             visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 50;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+            transform: translateY(100px) translateX(-50%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #toast.show {
             visibility: visible;
-            opacity: 1;
-            bottom: 50px;
+            transform: translateY(0) translateX(-50%);
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+<body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen antialiased pb-20">
 
-    <!-- Navbar -->
-    <nav class="bg-blue-600 text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-boxes"></i> Kalkulator Bahan Baku
-            </h1>
+    <!-- Header & App Title -->
+    <header class="pt-10 pb-6 text-center px-4">
+        <div class="inline-flex items-center justify-center p-3 bg-primary-100 text-primary-600 rounded-2xl mb-4">
+            <i class="ph ph-scales text-3xl"></i>
         </div>
-    </nav>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Kalkulator Produksi</h1>
+        <p class="text-slate-500 text-sm mt-1">Hitung kebutuhan bahan baku dengan mudah</p>
+    </header>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl mx-auto px-4 py-6">
+    <main class="max-w-2xl mx-auto px-4">
         
-        <!-- Tab Navigation -->
-        <div class="flex space-x-2 mb-6 border-b border-gray-200">
-            <button onclick="switchTab('kalkulator')" id="tab-kalkulator" class="px-4 py-2 font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none transition-colors">
-                <i class="fas fa-calculator mr-2"></i>Kalkulator
+        <!-- Segmented Control Navigation (Modern Toggle) -->
+        <div class="flex p-1 bg-slate-200/60 rounded-2xl max-w-sm mx-auto mb-8 shadow-inner">
+            <button onclick="switchTab('kalkulator')" id="tab-kalkulator" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2">
+                <i class="ph ph-calculator text-lg"></i> Hitung
             </button>
-            <button onclick="switchTab('pengaturan')" id="tab-pengaturan" class="px-4 py-2 font-medium text-gray-500 hover:text-blue-600 focus:outline-none transition-colors">
-                <i class="fas fa-cog mr-2"></i>Pengaturan
+            <button onclick="switchTab('pengaturan')" id="tab-pengaturan" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2">
+                <i class="ph ph-sliders-horizontal text-lg"></i> Pengaturan
             </button>
         </div>
 
-        <!-- TAB: KALKULATOR -->
-        <div id="content-kalkulator" class="tab-content active">
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h2 class="text-lg font-semibold mb-4 text-gray-700">Hitung Kebutuhan Produksi</h2>
+        <!-- ==================== VIEW: KALKULATOR ==================== -->
+        <div id="view-kalkulator" class="view-section active">
+            
+            <!-- Form Kalkulator -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-indigo-500"></div>
                 
-                <form id="calc-form" class="space-y-4 md:space-y-0 md:flex md:gap-4 items-end">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Pilih Barang yang Dibuat</label>
-                        <select id="calc-barang" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
-                            <option value="">-- Pilih Barang --</option>
-                            <!-- Options akan diisi via JS -->
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Total Produksi (Kg)</label>
+                <form id="calc-form" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Barang yang diproduksi</label>
                         <div class="relative">
-                            <input type="number" id="calc-jumlah" step="0.01" min="0.01" placeholder="Misal: 5" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none pl-4 pr-12" required>
-                            <span class="absolute right-4 top-2.5 text-gray-400">Kg</span>
+                            <i class="ph ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none"></i>
+                            <select id="calc-barang" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
+                                <!-- Options diisi via JS -->
+                            </select>
+                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
-                    <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-check"></i> Hitung
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Total Produksi</label>
+                        <div class="relative flex items-center bg-slate-50 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden border border-transparent focus-within:border-primary-100 shadow-sm">
+                            <i class="ph ph-weight absolute left-4 text-slate-400 text-xl pointer-events-none"></i>
+                            <input type="number" id="calc-jumlah" step="0.01" min="0.01" placeholder="Masukkan jumlah" class="flex-1 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
+                            <div class="border-l border-slate-200 h-8"></div>
+                            <div class="relative">
+                                <select id="calc-satuan" class="bg-transparent text-slate-700 font-semibold py-3.5 pl-4 pr-10 outline-none cursor-pointer appearance-none hover:text-slate-900 transition-colors">
+                                    <option value="kg">Kg</option>
+                                    <option value="gram">Gram</option>
+                                </select>
+                                <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-primary-600 text-white font-medium py-3.5 px-6 rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
+                        <i class="ph ph-magic-wand"></i> Kalkulasi Sekarang
                     </button>
                 </form>
+            </div>
 
-                <!-- Hasil Kalkulasi -->
-                <div id="calc-result-container" class="mt-8 hidden">
-                    <h3 class="text-md font-semibold text-gray-700 mb-3 border-b pb-2">Hasil Perhitungan Bahan Baku</h3>
-                    <p id="calc-summary" class="text-sm text-gray-600 mb-4"></p>
+            <!-- Hasil Kalkulasi -->
+            <div id="calc-result-container" class="hidden">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                            <i class="ph ph-check-circle text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">Hasil Perhitungan</h3>
+                    </div>
+                    <p id="calc-summary" class="text-sm text-slate-500 mb-6 pb-4 border-b border-slate-100"></p>
                     
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-600 text-sm border-b">
-                                    <th class="p-3 rounded-tl-lg">Nama Bahan Baku</th>
-                                    <th class="p-3 rounded-tr-lg text-right">Total Dibutuhkan (Gram)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="calc-result-body" class="divide-y divide-gray-100">
-                                <!-- Hasil akan muncul di sini -->
-                            </tbody>
-                        </table>
+                    <div id="calc-result-list" class="space-y-3">
+                        <!-- List Hasil akan muncul di sini -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB: PENGATURAN -->
-        <div id="content-pengaturan" class="tab-content">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- ==================== VIEW: PENGATURAN ==================== -->
+        <div id="view-pengaturan" class="view-section">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <!-- Kolom Kiri: Form Tambah -->
+                <!-- Kolom Kiri: Input Data -->
                 <div class="space-y-6">
-                    <!-- Tambah Barang -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h2 class="text-lg font-semibold mb-4 text-gray-700">1. Tambah Barang Baru</h2>
+                    
+                    <!-- 1. Tambah Barang -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="ph ph-plus-circle text-primary-500 text-xl"></i> Tambah Barang Baru
+                        </h2>
                         <form id="add-barang-form" class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">Nama Barang Jadi</label>
-                                <input type="text" id="input-nama-barang" placeholder="Misal: Roti Manis" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
-                            </div>
-                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            <input type="text" id="input-nama-barang" placeholder="Nama Barang (Cth: Roti Manis)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
+                            <button type="submit" class="w-full bg-primary-50 text-primary-600 hover:bg-primary-100 font-semibold py-3 px-4 rounded-2xl transition-colors">
                                 Simpan Barang
                             </button>
                         </form>
                     </div>
 
-                    <!-- Tambah Bahan Baku -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h2 class="text-lg font-semibold mb-4 text-gray-700">2. Tambah Resep Bahan Baku</h2>
-                        <p class="text-xs text-gray-500 mb-4">*Masukkan bahan baku yang dibutuhkan untuk membuat <strong>1 Kg</strong> barang tersebut.</p>
+                    <!-- 2. Tambah Resep/Bahan -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                        <div class="mb-4">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="ph ph-list-plus text-primary-500 text-xl"></i> Resep per 1 Kg
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Tambahkan bahan yang dibutuhkan untuk 1 Kg barang.</p>
+                        </div>
                         <form id="add-bahan-form" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">Pilih Barang</label>
-                                <select id="select-barang-settings" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
-                                    <option value="">-- Buat barang terlebih dahulu --</option>
+                            <div class="relative">
+                                <select id="select-barang-settings" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
+                                    <option value="">-- Pilih Barang --</option>
                                 </select>
+                                <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">Nama Bahan Baku</label>
-                                <input type="text" id="input-nama-bahan" placeholder="Misal: Tepung Terigu" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
+                            
+                            <input type="text" id="input-nama-bahan" placeholder="Nama Bahan (Cth: Tepung Terigu)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
+                            
+                            <div class="relative">
+                                <input type="number" id="input-jumlah-bahan" step="0.1" min="0.1" placeholder="Jumlah Kebutuhan" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 pl-4 pr-16 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Gram</span>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1">Jumlah (Gram) per 1 Kg Barang</label>
-                                <div class="relative">
-                                    <input type="number" id="input-jumlah-bahan" step="0.1" min="0.1" placeholder="Misal: 500" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none pl-4 pr-16" required>
-                                    <span class="absolute right-4 top-2.5 text-gray-400">Gram</span>
-                                </div>
-                            </div>
-                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+
+                            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-2xl transition-all shadow-sm mt-2">
                                 Tambah Bahan
                             </button>
                         </form>
                     </div>
+
+                    <!-- 3. Backup & Restore -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                        <div class="mb-4">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="ph ph-cloud-arrow-up text-primary-500 text-xl"></i> Backup & Restore Data
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Simpan atau pulihkan data barang dan resep Anda (Format .txt).</p>
+                        </div>
+                        <div class="flex gap-3 mt-4">
+                            <button onclick="backupData()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-2 rounded-2xl transition-colors flex items-center justify-center gap-2 text-sm">
+                                <i class="ph ph-download-simple text-lg"></i> Backup
+                            </button>
+                            <label class="flex-1 bg-primary-50 text-primary-600 hover:bg-primary-100 font-semibold py-3 px-2 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm">
+                                <i class="ph ph-upload-simple text-lg"></i> Restore
+                                <input type="file" id="restore-file" accept=".txt" class="hidden" onchange="restoreData(event)">
+                            </label>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Kolom Kanan: Daftar Barang & Bahan -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-fit max-h-[80vh] overflow-y-auto">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-700">Daftar Barang & Resep</h2>
-                    <div id="daftar-barang-container" class="space-y-4">
-                        <!-- List barang akan di-render di sini oleh JS -->
+                <!-- Kolom Kanan: Daftar -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:h-[650px] flex flex-col">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="ph ph-database text-primary-500 text-xl"></i> Database Resep
+                    </h2>
+                    
+                    <!-- Container List -->
+                    <div id="daftar-barang-container" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                        <!-- List barang dirender disini -->
                     </div>
                 </div>
 
@@ -178,66 +242,86 @@
 
     </main>
 
-    <!-- Toast Component -->
-    <div id="toast">Pesan Notifikasi</div>
+    <!-- Glassmorphism Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 z-50 flex items-center gap-3 px-6 py-3.5 rounded-full shadow-xl">
+        <i class="ph ph-info text-primary-400 text-xl"></i>
+        <span id="toast-msg" class="text-sm font-medium">Pesan notifikasi</span>
+    </div>
 
-    <!-- JavaScript Logic -->
+    <!-- Application Logic -->
     <script>
-        // --- State Management ---
-        // Struktur data: { "ID_BARANG": { nama: "Nama Barang", bahan: [ {nama: "Tepung", qty: 500} ] } }
-        let db = JSON.parse(localStorage.getItem('bahanBakuDB')) || {};
+        // --- 1. State Management (Database) ---
+        let db = JSON.parse(localStorage.getItem('bahanBakuDB_v2')) || {};
 
         function saveDB() {
-            localStorage.setItem('bahanBakuDB', JSON.stringify(db));
-            renderAll();
+            localStorage.setItem('bahanBakuDB_v2', JSON.stringify(db));
+            renderSemua();
         }
 
-        // --- UI Utilities ---
+        // --- 2. UI Utilities ---
         function switchTab(tabName) {
-            // Update Buttons
-            document.getElementById('tab-kalkulator').className = 'px-4 py-2 font-medium focus:outline-none transition-colors ' + (tabName === 'kalkulator' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 border-b-2 border-transparent');
-            document.getElementById('tab-pengaturan').className = 'px-4 py-2 font-medium focus:outline-none transition-colors ' + (tabName === 'pengaturan' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 border-b-2 border-transparent');
-            
-            // Update Contents
-            document.getElementById('content-kalkulator').classList.remove('active');
-            document.getElementById('content-pengaturan').classList.remove('active');
-            document.getElementById('content-' + tabName).classList.add('active');
+            // Update Toggle Button Styles
+            const btnCalc = document.getElementById('tab-kalkulator');
+            const btnPengaturan = document.getElementById('tab-pengaturan');
+
+            if(tabName === 'kalkulator') {
+                btnCalc.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2";
+                btnPengaturan.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2";
+            } else {
+                btnPengaturan.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2";
+                btnCalc.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2";
+            }
+
+            // Update Views (with animation delay logic)
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            setTimeout(() => {
+                document.getElementById('view-' + tabName).classList.add('active');
+            }, 50);
         }
 
         function showToast(message) {
             const toast = document.getElementById("toast");
-            toast.textContent = message;
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            document.getElementById("toast-msg").textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
         }
 
-        // --- Rendering Functions ---
-        function renderAll() {
-            renderDropdowns();
+        function formatNumber(num) {
+            // Mengubah 1500.5 menjadi "1.500,5"
+            return num.toLocaleString('id-ID'); 
+        }
+
+        // --- 3. Rendering ---
+        function renderSemua() {
+            renderDropdown();
             renderDaftarBarang();
         }
 
-        function renderDropdowns() {
+        function renderDropdown() {
             const calcSelect = document.getElementById('calc-barang');
             const setSelect = document.getElementById('select-barang-settings');
             
-            // Simpan value yang sedang dipilih (jika ada)
             const currentCalcVal = calcSelect.value;
             const currentSetVal = setSelect.value;
 
-            let optionsHTML = '<option value="">-- Pilih Barang --</option>';
+            let emptyOption = '<option value="" disabled selected>-- Pilih Barang --</option>';
+            let optionsHTML = emptyOption;
             
+            let count = 0;
             for (const id in db) {
                 optionsHTML += `<option value="${id}">${db[id].nama}</option>`;
+                count++;
             }
 
-            if (Object.keys(db).length === 0) {
-                setSelect.innerHTML = '<option value="">-- Tambah barang di atas terlebih dahulu --</option>';
+            if (count === 0) {
+                const emptyState = '<option value="" disabled selected>Belum ada data barang</option>';
+                setSelect.innerHTML = emptyState;
+                calcSelect.innerHTML = emptyState;
             } else {
                 setSelect.innerHTML = optionsHTML;
                 calcSelect.innerHTML = optionsHTML;
                 
-                // Kembalikan value yang dipilih sebelumnya jika masih valid
+                // Keep selected value
                 if (db[currentCalcVal]) calcSelect.value = currentCalcVal;
                 if (db[currentSetVal]) setSelect.value = currentSetVal;
             }
@@ -248,84 +332,83 @@
             container.innerHTML = '';
 
             if (Object.keys(db).length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500 italic text-center py-4">Belum ada barang yang ditambahkan.</p>';
+                container.innerHTML = `
+                    <div class="text-center py-10 px-4">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-400 mb-3">
+                            <i class="ph ph-empty text-3xl"></i>
+                        </div>
+                        <p class="text-slate-500 text-sm">Belum ada barang & resep.<br>Tambahkan di form sebelah kiri.</p>
+                    </div>`;
                 return;
             }
 
             for (const id in db) {
                 const barang = db[id];
                 
-                // Header Barang
+                // Wrapper Card
                 const card = document.createElement('div');
-                card.className = 'border border-gray-200 rounded-lg overflow-hidden';
+                card.className = 'bg-slate-50 rounded-2xl border border-slate-100 p-4 transition-all hover:border-slate-200';
                 
-                let bahanHTML = '';
+                // Header (Nama Barang & Tombol Hapus)
+                let html = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph ph-package text-primary-500"></i> ${barang.nama}
+                        </h3>
+                        <button onclick="hapusBarang('${id}')" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Hapus Barang">
+                            <i class="ph ph-trash text-lg"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2">
+                `;
+
+                // List Bahan Baku
                 if (barang.bahan.length === 0) {
-                    bahanHTML = '<tr><td colspan="3" class="px-4 py-2 text-sm text-gray-500 italic text-center">Belum ada bahan baku.</td></tr>';
+                    html += `<p class="text-xs text-slate-400 italic">Belum ada bahan ditambahkan.</p>`;
                 } else {
                     barang.bahan.forEach((b, index) => {
-                        bahanHTML += `
-                            <tr class="border-t border-gray-100 hover:bg-gray-50">
-                                <td class="px-4 py-2 text-sm text-gray-700">${b.nama}</td>
-                                <td class="px-4 py-2 text-sm text-gray-700 font-medium">${formatNumber(b.qty)} g</td>
-                                <td class="px-4 py-2 text-right">
-                                    <button onclick="hapusBahan('${id}', ${index})" class="text-red-500 hover:text-red-700" title="Hapus Bahan">
-                                        <i class="fas fa-times"></i>
+                        html += `
+                            <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-slate-100">
+                                <span class="text-sm text-slate-600">${b.nama}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold text-slate-800">${formatNumber(b.qty)} <span class="text-slate-400 font-normal text-xs">g</span></span>
+                                    <button onclick="hapusBahan('${id}', ${index})" class="text-slate-300 hover:text-red-500 transition-colors">
+                                        <i class="ph ph-x-circle text-base"></i>
                                     </button>
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                         `;
                     });
                 }
 
-                card.innerHTML = `
-                    <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-b border-gray-200">
-                        <h3 class="font-semibold text-gray-800">${barang.nama}</h3>
-                        <button onclick="hapusBarang('${id}')" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 transition-colors">
-                            Hapus Barang
-                        </button>
-                    </div>
-                    <table class="w-full text-left">
-                        <thead class="bg-white text-xs text-gray-500">
-                            <tr>
-                                <th class="px-4 py-2 font-medium">Bahan Baku (per 1 Kg)</th>
-                                <th class="px-4 py-2 font-medium">Jumlah</th>
-                                <th class="px-4 py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${bahanHTML}
-                        </tbody>
-                    </table>
-                `;
+                html += `</div>`;
+                card.innerHTML = html;
                 container.appendChild(card);
             }
         }
 
-        // --- Helper Formatting ---
-        function formatNumber(num) {
-            // Format angka dengan pemisah ribuan agar mudah dibaca
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-
-        // --- Event Listeners & Core Logic ---
+        // --- 4. Event Listeners ---
         
-        // 1. Tambah Barang
+        // Form Tambah Barang
         document.getElementById('add-barang-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const namaInput = document.getElementById('input-nama-barang');
-            const namaBarang = namaInput.value.trim();
+            const input = document.getElementById('input-nama-barang');
+            const nama = input.value.trim();
             
-            if (namaBarang) {
-                const id = 'BRG_' + Date.now();
-                db[id] = { nama: namaBarang, bahan: [] };
+            if (nama) {
+                const id = 'ITEM_' + Date.now();
+                db[id] = { nama: nama, bahan: [] };
                 saveDB();
-                namaInput.value = '';
-                showToast(`Barang "${namaBarang}" berhasil ditambahkan.`);
+                
+                // Auto select barang yang baru dibuat di dropdown bahan
+                document.getElementById('select-barang-settings').value = id;
+                
+                input.value = '';
+                showToast(`"${nama}" ditambahkan.`);
             }
         });
 
-        // 2. Tambah Bahan Baku
+        // Form Tambah Bahan
         document.getElementById('add-bahan-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idBarang = document.getElementById('select-barang-settings').value;
@@ -341,85 +424,158 @@
                 db[idBarang].bahan.push({ nama: namaBahan, qty: qtyBahan });
                 saveDB();
                 
-                // Reset form input bahan saja, biarkan barang terpilih
                 document.getElementById('input-nama-bahan').value = '';
                 document.getElementById('input-jumlah-bahan').value = '';
-                showToast(`Bahan "${namaBahan}" ditambahkan ke ${db[idBarang].nama}.`);
+                
+                // Focus kembali ke input nama bahan agar cepat input banyak
+                document.getElementById('input-nama-bahan').focus();
+                showToast(`Bahan ditambahkan ke resep.`);
             }
         });
 
-        // 3. Kalkulator / Perhitungan
+        // Form Kalkulator
         document.getElementById('calc-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idBarang = document.getElementById('calc-barang').value;
-            const jumlahKg = parseFloat(document.getElementById('calc-jumlah').value);
+            const jumlahInput = parseFloat(document.getElementById('calc-jumlah').value);
+            const satuan = document.getElementById('calc-satuan').value;
 
             if (!idBarang || !db[idBarang]) {
-                showToast("Pilih barang yang valid!");
+                showToast("Pilih barang dari daftar.");
                 return;
+            }
+
+            // Hitung nilai ekuivalen dalam Kg karena resep dasarnya per 1 Kg
+            let jumlahKg = jumlahInput;
+            if (satuan === 'gram') {
+                jumlahKg = jumlahInput / 1000;
             }
 
             const barang = db[idBarang];
-            const tbody = document.getElementById('calc-result-body');
-            const container = document.getElementById('calc-result-container');
+            const listContainer = document.getElementById('calc-result-list');
+            const mainContainer = document.getElementById('calc-result-container');
             const summary = document.getElementById('calc-summary');
             
-            tbody.innerHTML = ''; // bersihkan tabel
+            listContainer.innerHTML = ''; 
             
             if (barang.bahan.length === 0) {
-                summary.innerHTML = `<span class="text-red-500">Belum ada resep bahan baku untuk <strong>${barang.nama}</strong>. Silakan tambahkan di menu Pengaturan.</span>`;
-                container.classList.remove('hidden');
+                summary.innerHTML = `<span class="text-red-500"><i class="ph ph-warning-circle inline"></i> Resep untuk <strong>${barang.nama}</strong> masih kosong. Silakan atur di menu Pengaturan.</span>`;
+                mainContainer.classList.remove('hidden');
                 return;
             }
 
-            summary.innerHTML = `Untuk membuat <strong>${jumlahKg} Kg</strong> ${barang.nama}, Anda membutuhkan:`;
+            // Atur nama satuan untuk ditampilkan di teks ringkasan
+            const labelSatuan = satuan === 'kg' ? 'Kg' : 'Gram';
+            summary.innerHTML = `Bahan untuk <strong>${formatNumber(jumlahInput)} ${labelSatuan}</strong> ${barang.nama}:`;
 
             barang.bahan.forEach(b => {
                 const totalGram = b.qty * jumlahKg;
                 
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 border-b border-gray-100 text-gray-700">${b.nama}</td>
-                    <td class="p-3 border-b border-gray-100 text-right text-gray-800 font-semibold text-lg">${formatNumber(totalGram)} <span class="text-sm font-normal text-gray-500">g</span></td>
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center py-2.5 px-1 border-b border-slate-100 last:border-0";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-primary-400"></div>
+                        <span class="text-slate-700 font-medium">${b.nama}</span>
+                    </div>
+                    <span class="text-slate-900 font-bold text-lg">${formatNumber(totalGram)} <span class="text-slate-500 font-normal text-sm">gram</span></span>
                 `;
-                tbody.appendChild(tr);
+                listContainer.appendChild(item);
             });
 
-            container.classList.remove('hidden');
-            
-            // Scroll ke hasil
-            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            mainContainer.classList.remove('hidden');
         });
 
-        // 4. Fitur Hapus (Global functions karena dipanggil via inline onclick)
+        // Delete Functions (Global)
         window.hapusBarang = function(id) {
-            if(confirm(`Yakin ingin menghapus barang "${db[id].nama}" beserta semua resep bahannya?`)) {
+            if(confirm(`Yakin ingin menghapus "${db[id].nama}" dan semua resepnya?`)) {
                 delete db[id];
                 saveDB();
                 
-                // Sembunyikan kalkulator jika barang yang sedang dihitung dihapus
+                // Hide calculator result if deleted item was active
                 const calcContainer = document.getElementById('calc-result-container');
                 if(!calcContainer.classList.contains('hidden')) {
                     calcContainer.classList.add('hidden');
                 }
-                showToast("Barang berhasil dihapus.");
+                showToast("Barang dihapus.");
             }
         };
 
         window.hapusBahan = function(idBarang, indexBahan) {
-            if(confirm(`Hapus bahan baku ini?`)) {
-                db[idBarang].bahan.splice(indexBahan, 1);
-                saveDB();
-                showToast("Bahan baku dihapus.");
-            }
+            db[idBarang].bahan.splice(indexBahan, 1);
+            saveDB();
+            showToast("Bahan dihapus.");
         };
 
-        // --- Inisialisasi Awal ---
-        renderAll();
+        // --- 5. Backup & Restore Functions ---
+        window.backupData = function() {
+            if (Object.keys(db).length === 0) {
+                showToast("Tidak ada data untuk di-backup.");
+                return;
+            }
+            
+            // Konversi database ke format string (JSON)
+            const dataStr = JSON.stringify(db, null, 2);
+            
+            // Buat file Blob (text file)
+            const blob = new Blob([dataStr], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            
+            // Buat elemen anchor tersembunyi untuk memicu download
+            const a = document.createElement("a");
+            a.href = url;
+            
+            // Buat nama file dengan tanggal hari ini
+            const date = new Date().toISOString().slice(0, 10);
+            a.download = `Backup_Resep_${date}.txt`;
+            
+            document.body.appendChild(a);
+            a.click(); // Jalankan download
+            
+            // Bersihkan sisa elemen
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Data berhasil di-backup (.txt)");
+        };
+
+        window.restoreData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const contents = e.target.result;
+                    const parsedData = JSON.parse(contents);
+                    
+                    // Validasi sederhana memastikan yang diupload adalah format object JSON yang benar
+                    if (typeof parsedData === 'object' && !Array.isArray(parsedData) && parsedData !== null) {
+                        if(confirm("Memulihkan data akan menimpa (overwrite) data saat ini. Lanjutkan?")) {
+                            db = parsedData;
+                            saveDB();
+                            showToast("Data berhasil dipulihkan!");
+                        }
+                    } else {
+                        showToast("Format file tidak valid!");
+                    }
+                } catch (err) {
+                    showToast("Gagal memulihkan. Pastikan file .txt adalah hasil backup aplikasi ini.");
+                }
+                
+                // Reset input agar bisa upload file yang sama lagi jika diperlukan
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        };
+
+        // --- Run on Load ---
+        renderSemua();
 
     </script>
 </body>
 </html>
 
 
+
+```
