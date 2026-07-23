@@ -11,7 +11,7 @@
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Phosphor Icons (Modern Minimalist Icons) -->
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <!-- Tailwind Config & Custom Styles -->
@@ -21,14 +21,13 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Smooth Fade & Slide Animations */
         .view-section {
             display: none;
             opacity: 0;
@@ -41,20 +40,17 @@
             transform: translateY(0);
         }
         
-        /* Modern Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-        /* Hide Number Input Arrows */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        /* Glassmorphism Toast */
         #toast {
             visibility: hidden;
             background: rgba(17, 24, 39, 0.85);
@@ -72,18 +68,17 @@
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen antialiased pb-20">
 
-    <!-- Header & App Title -->
     <header class="pt-10 pb-6 text-center px-4">
         <div class="inline-flex items-center justify-center p-3 bg-primary-100 text-primary-600 rounded-2xl mb-4">
             <i class="ph ph-scales text-3xl"></i>
         </div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Kalkulator Produksi</h1>
-        <p class="text-slate-500 text-sm mt-1">Hitung kebutuhan bahan baku dengan mudah</p>
+        <p class="text-slate-500 text-sm mt-1">Hitung & gabungkan kebutuhan bahan baku</p>
     </header>
 
-    <main class="max-w-2xl mx-auto px-4">
+    <main class="max-w-3xl mx-auto px-4">
         
-        <!-- Segmented Control Navigation (Modern Toggle) -->
+        <!-- Toggle Navigation -->
         <div class="flex p-1 bg-slate-200/60 rounded-2xl max-w-sm mx-auto mb-8 shadow-inner">
             <button onclick="switchTab('kalkulator')" id="tab-kalkulator" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2">
                 <i class="ph ph-calculator text-lg"></i> Hitung
@@ -96,73 +91,86 @@
         <!-- ==================== VIEW: KALKULATOR ==================== -->
         <div id="view-kalkulator" class="view-section active">
             
-            <!-- Form Kalkulator -->
+            <!-- Form Tambah ke Kalkulasi -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-indigo-500"></div>
                 
                 <form id="calc-form" class="space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Barang yang diproduksi</label>
-                        <div class="relative">
-                            <i class="ph ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none"></i>
-                            <select id="calc-barang" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
-                                <!-- Options diisi via JS -->
-                            </select>
-                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Total Produksi</label>
-                        <div class="relative flex items-center bg-slate-50 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden border border-transparent focus-within:border-primary-100 shadow-sm">
-                            <i class="ph ph-weight absolute left-4 text-slate-400 text-xl pointer-events-none"></i>
-                            <!-- Menambahkan min-w-0 agar input tidak mendorong elemen lain keluar, dan mengubah step menjadi 0.001 -->
-                            <input type="number" id="calc-jumlah" step="0.001" min="0.001" placeholder="Masukkan jumlah" class="flex-1 min-w-0 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
-                            <div class="border-l border-slate-200 h-8"></div>
-                            <!-- Menambahkan shrink-0 agar dropdown tidak tertekan -->
-                            <div class="relative shrink-0">
-                                <select id="calc-satuan" class="bg-transparent text-slate-700 font-semibold py-3.5 pl-4 pr-10 outline-none cursor-pointer appearance-none hover:text-slate-900 transition-colors">
-                                    <option value="kg">Kg</option>
-                                    <option value="gram">Gram</option>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Barang yang diproduksi</label>
+                            <div class="relative">
+                                <i class="ph ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none"></i>
+                                <select id="calc-barang" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
+                                    <!-- Options -->
                                 </select>
                                 <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Jumlah Produksi</label>
+                            <div class="relative flex items-center bg-slate-50 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden border border-transparent focus-within:border-primary-100 shadow-sm">
+                                <i class="ph ph-weight absolute left-4 text-slate-400 text-xl pointer-events-none"></i>
+                                <input type="number" id="calc-jumlah" step="0.001" min="0.001" placeholder="Misal: 2.5" class="flex-1 min-w-0 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
+                                <div class="border-l border-slate-200 h-8"></div>
+                                <div class="relative shrink-0">
+                                    <select id="calc-satuan" class="bg-transparent text-slate-700 font-semibold py-3.5 pl-4 pr-10 outline-none cursor-pointer appearance-none hover:text-slate-900 transition-colors">
+                                        <option value="kg">Kg</option>
+                                        <option value="gram">Gram</option>
+                                    </select>
+                                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="w-full bg-slate-900 hover:bg-primary-600 text-white font-medium py-3.5 px-6 rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
-                        <i class="ph ph-magic-wand"></i> Kalkulasi Sekarang
+                        <i class="ph ph-plus-circle text-lg"></i> Tambahkan ke Daftar Produksi
                     </button>
                 </form>
             </div>
 
-            <!-- Hasil Kalkulasi -->
-            <div id="calc-result-container" class="hidden">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                            <i class="ph ph-check-circle text-xl"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">Hasil Perhitungan</h3>
+            <!-- Hasil Kalkulasi (List Produksi & Grand Total) -->
+            <div id="calc-result-container" class="hidden space-y-6">
+                
+                <!-- Rencana Produksi -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph ph-clipboard-text text-primary-500 text-xl"></i> Rencana Produksi
+                        </h3>
+                        <button onclick="clearCart()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                            Bersihkan Daftar
+                        </button>
                     </div>
-                    <p id="calc-summary" class="text-sm text-slate-500 mb-6 pb-4 border-b border-slate-100"></p>
-                    
-                    <div id="calc-result-list" class="space-y-3">
-                        <!-- List Hasil akan muncul di sini -->
+                    <div id="calc-cart-list" class="space-y-2">
+                        <!-- Item produksi render di sini -->
                     </div>
                 </div>
+
+                <!-- Grand Total Bahan Baku -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
+                    <!-- Aksen bg -->
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-50 rounded-full blur-3xl opacity-60"></div>
+                    
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-4 relative z-10">
+                        <i class="ph ph-shopping-cart text-emerald-500 text-xl"></i> Total Kebutuhan Bahan (Gabungan)
+                    </h3>
+                    <div id="calc-grand-total-list" class="space-y-3 relative z-10">
+                        <!-- Total bahan baku render di sini -->
+                    </div>
+                </div>
+
             </div>
         </div>
 
-
         <!-- ==================== VIEW: PENGATURAN ==================== -->
         <div id="view-pengaturan" class="view-section">
-            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <!-- Kolom Kiri: Input Data -->
+                <!-- Kolom Kiri -->
                 <div class="space-y-6">
-                    
                     <!-- 1. Tambah Barang -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
                         <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -195,7 +203,6 @@
                             <input type="text" id="input-nama-bahan" placeholder="Nama Bahan (Cth: Tepung Terigu)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
                             
                             <div class="relative">
-                                <!-- Mengubah step dan min menjadi 0.001 agar mendukung 3 angka di belakang koma -->
                                 <input type="number" id="input-jumlah-bahan" step="0.001" min="0.001" placeholder="Jumlah Kebutuhan" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 pl-4 pr-16 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
                                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Gram</span>
                             </div>
@@ -212,7 +219,7 @@
                             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <i class="ph ph-cloud-arrow-up text-primary-500 text-xl"></i> Backup & Restore Data
                             </h2>
-                            <p class="text-xs text-slate-500 mt-1">Simpan atau pulihkan data barang dan resep Anda (Format .txt).</p>
+                            <p class="text-xs text-slate-500 mt-1">Simpan atau pulihkan data (Format .txt).</p>
                         </div>
                         <div class="flex gap-3 mt-4">
                             <button onclick="backupData()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-2 rounded-2xl transition-colors flex items-center justify-center gap-2 text-sm">
@@ -224,16 +231,13 @@
                             </label>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- Kolom Kanan: Daftar -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:h-[650px] flex flex-col">
+                <!-- Kolom Kanan: Database Resep -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:h-[750px] flex flex-col">
                     <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i class="ph ph-database text-primary-500 text-xl"></i> Database Resep
                     </h2>
-                    
-                    <!-- Container List -->
                     <div id="daftar-barang-container" class="flex-1 overflow-y-auto space-y-4 pr-2">
                         <!-- List barang dirender disini -->
                     </div>
@@ -244,7 +248,7 @@
 
     </main>
 
-    <!-- Glassmorphism Toast Notification -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-8 left-1/2 z-50 flex items-center gap-3 px-6 py-3.5 rounded-full shadow-xl">
         <i class="ph ph-info text-primary-400 text-xl"></i>
         <span id="toast-msg" class="text-sm font-medium">Pesan notifikasi</span>
@@ -252,17 +256,17 @@
 
     <!-- Application Logic -->
     <script>
-        // --- 1. State Management (Database) ---
-        let db = JSON.parse(localStorage.getItem('bahanBakuDB_v2')) || {};
+        // --- 1. State Management ---
+        let db = JSON.parse(localStorage.getItem('bahanBakuDB_v3')) || {};
+        let productionCart = []; // Array untuk menyimpan daftar barang yang akan diproduksi
 
         function saveDB() {
-            localStorage.setItem('bahanBakuDB_v2', JSON.stringify(db));
+            localStorage.setItem('bahanBakuDB_v3', JSON.stringify(db));
             renderSemua();
         }
 
         // --- 2. UI Utilities ---
         function switchTab(tabName) {
-            // Update Toggle Button Styles
             const btnCalc = document.getElementById('tab-kalkulator');
             const btnPengaturan = document.getElementById('tab-pengaturan');
 
@@ -274,11 +278,8 @@
                 btnCalc.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2";
             }
 
-            // Update Views (with animation delay logic)
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            setTimeout(() => {
-                document.getElementById('view-' + tabName).classList.add('active');
-            }, 50);
+            setTimeout(() => { document.getElementById('view-' + tabName).classList.add('active'); }, 50);
         }
 
         function showToast(message) {
@@ -289,7 +290,6 @@
         }
 
         function formatNumber(num) {
-            // Mengatur maksimal pecahan (angka di belakang koma) menjadi 3
             return num.toLocaleString('id-ID', { maximumFractionDigits: 3 }); 
         }
 
@@ -297,6 +297,7 @@
         function renderSemua() {
             renderDropdown();
             renderDaftarBarang();
+            renderKalkulator();
         }
 
         function renderDropdown() {
@@ -322,8 +323,6 @@
             } else {
                 setSelect.innerHTML = optionsHTML;
                 calcSelect.innerHTML = optionsHTML;
-                
-                // Keep selected value
                 if (db[currentCalcVal]) calcSelect.value = currentCalcVal;
                 if (db[currentSetVal]) setSelect.value = currentSetVal;
             }
@@ -339,19 +338,16 @@
                         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-400 mb-3">
                             <i class="ph ph-empty text-3xl"></i>
                         </div>
-                        <p class="text-slate-500 text-sm">Belum ada barang & resep.<br>Tambahkan di form sebelah kiri.</p>
+                        <p class="text-slate-500 text-sm">Belum ada resep yang dibuat.</p>
                     </div>`;
                 return;
             }
 
             for (const id in db) {
                 const barang = db[id];
-                
-                // Wrapper Card
                 const card = document.createElement('div');
                 card.className = 'bg-slate-50 rounded-2xl border border-slate-100 p-4 transition-all hover:border-slate-200';
                 
-                // Header (Nama Barang & Tombol Hapus)
                 let html = `
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-bold text-slate-800 flex items-center gap-2">
@@ -364,9 +360,8 @@
                     <div class="space-y-2">
                 `;
 
-                // List Bahan Baku
                 if (barang.bahan.length === 0) {
-                    html += `<p class="text-xs text-slate-400 italic">Belum ada bahan ditambahkan.</p>`;
+                    html += `<p class="text-xs text-slate-400 italic">Belum ada bahan.</p>`;
                 } else {
                     barang.bahan.forEach((b, index) => {
                         html += `
@@ -382,60 +377,124 @@
                         `;
                     });
                 }
-
                 html += `</div>`;
                 card.innerHTML = html;
                 container.appendChild(card);
             }
         }
 
+        // Fungsi baru untuk merender daftar kalkulasi gabungan
+        function renderKalkulator() {
+            const container = document.getElementById('calc-result-container');
+            const cartList = document.getElementById('calc-cart-list');
+            const grandTotalList = document.getElementById('calc-grand-total-list');
+            
+            // Filter cart untuk membuang item yang barangnya sudah dihapus dari pengaturan
+            productionCart = productionCart.filter(item => db[item.idBarang]);
+
+            if (productionCart.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            cartList.innerHTML = '';
+            grandTotalList.innerHTML = '';
+
+            // 1. Render Rencana Produksi (Cart)
+            let grandTotalBahan = {}; // Objek untuk menggabungkan total bahan
+
+            productionCart.forEach((item, index) => {
+                const barang = db[item.idBarang];
+                
+                // Tambahkan elemen ke UI Daftar Rencana
+                const cartItem = document.createElement('div');
+                cartItem.className = "flex justify-between items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-100";
+                cartItem.innerHTML = `
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">${barang.nama}</p>
+                        <p class="text-xs text-slate-500">Target: ${formatNumber(item.qtyInput)} ${item.satuan}</p>
+                    </div>
+                    <button onclick="hapusDariCart(${index})" class="text-slate-400 hover:text-red-500 transition-colors p-2 bg-white rounded-lg border border-slate-100">
+                        <i class="ph ph-trash text-lg"></i>
+                    </button>
+                `;
+                cartList.appendChild(cartItem);
+
+                // 2. Kalkulasi Penggabungan Bahan Baku
+                barang.bahan.forEach(b => {
+                    // Gabungkan berdasarkan nama bahan baku (dibuat huruf kecil agar tidak case-sensitive)
+                    const keyBahan = b.nama.trim().toLowerCase();
+                    const totalGram = b.qty * item.qtyKg;
+
+                    if (!grandTotalBahan[keyBahan]) {
+                        grandTotalBahan[keyBahan] = {
+                            namaAsli: b.nama.trim(), // Simpan nama asli untuk ditampilkan
+                            total: 0
+                        };
+                    }
+                    grandTotalBahan[keyBahan].total += totalGram;
+                });
+            });
+
+            // 3. Render Hasil Gabungan (Grand Total)
+            const arrayBahan = Object.values(grandTotalBahan);
+            
+            if (arrayBahan.length === 0) {
+                grandTotalList.innerHTML = '<p class="text-sm text-red-500 italic">Barang dalam rencana produksi tidak memiliki data resep.</p>';
+            } else {
+                // Urutkan abjad berdasarkan nama bahan
+                arrayBahan.sort((a, b) => a.namaAsli.localeCompare(b.namaAsli));
+                
+                arrayBahan.forEach(bahan => {
+                    const el = document.createElement('div');
+                    el.className = "flex justify-between items-center py-3 border-b border-slate-100 last:border-0";
+                    el.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                            <span class="text-slate-700 font-medium">${bahan.namaAsli}</span>
+                        </div>
+                        <span class="text-slate-900 font-bold text-lg">${formatNumber(bahan.total)} <span class="text-slate-500 font-normal text-sm">gram</span></span>
+                    `;
+                    grandTotalList.appendChild(el);
+                });
+            }
+        }
+
         // --- 4. Event Listeners ---
-        
-        // Form Tambah Barang
         document.getElementById('add-barang-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('input-nama-barang');
             const nama = input.value.trim();
-            
             if (nama) {
                 const id = 'ITEM_' + Date.now();
                 db[id] = { nama: nama, bahan: [] };
                 saveDB();
-                
-                // Auto select barang yang baru dibuat di dropdown bahan
                 document.getElementById('select-barang-settings').value = id;
-                
                 input.value = '';
                 showToast(`"${nama}" ditambahkan.`);
             }
         });
 
-        // Form Tambah Bahan
         document.getElementById('add-bahan-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idBarang = document.getElementById('select-barang-settings').value;
             const namaBahan = document.getElementById('input-nama-bahan').value.trim();
             const qtyBahan = parseFloat(document.getElementById('input-jumlah-bahan').value);
 
-            if (!idBarang) {
-                showToast("Pilih barang terlebih dahulu!");
-                return;
-            }
+            if (!idBarang) { showToast("Pilih barang terlebih dahulu!"); return; }
 
             if (namaBahan && qtyBahan > 0) {
                 db[idBarang].bahan.push({ nama: namaBahan, qty: qtyBahan });
                 saveDB();
-                
                 document.getElementById('input-nama-bahan').value = '';
                 document.getElementById('input-jumlah-bahan').value = '';
-                
-                // Focus kembali ke input nama bahan agar cepat input banyak
                 document.getElementById('input-nama-bahan').focus();
                 showToast(`Bahan ditambahkan ke resep.`);
             }
         });
 
-        // Form Kalkulator
+        // Form Tambah ke Kalkulator Produksi
         document.getElementById('calc-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idBarang = document.getElementById('calc-barang').value;
@@ -447,58 +506,30 @@
                 return;
             }
 
-            // Hitung nilai ekuivalen dalam Kg karena resep dasarnya per 1 Kg
-            let jumlahKg = jumlahInput;
-            if (satuan === 'gram') {
-                jumlahKg = jumlahInput / 1000;
-            }
+            // Hitung Kg untuk dasar perkalian
+            let qtyKg = jumlahInput;
+            if (satuan === 'gram') qtyKg = jumlahInput / 1000;
 
-            const barang = db[idBarang];
-            const listContainer = document.getElementById('calc-result-list');
-            const mainContainer = document.getElementById('calc-result-container');
-            const summary = document.getElementById('calc-summary');
-            
-            listContainer.innerHTML = ''; 
-            
-            if (barang.bahan.length === 0) {
-                summary.innerHTML = `<span class="text-red-500"><i class="ph ph-warning-circle inline"></i> Resep untuk <strong>${barang.nama}</strong> masih kosong. Silakan atur di menu Pengaturan.</span>`;
-                mainContainer.classList.remove('hidden');
-                return;
-            }
-
-            // Atur nama satuan untuk ditampilkan di teks ringkasan
-            const labelSatuan = satuan === 'kg' ? 'Kg' : 'Gram';
-            summary.innerHTML = `Bahan untuk <strong>${formatNumber(jumlahInput)} ${labelSatuan}</strong> ${barang.nama}:`;
-
-            barang.bahan.forEach(b => {
-                const totalGram = b.qty * jumlahKg;
-                
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center py-2.5 px-1 border-b border-slate-100 last:border-0";
-                item.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 rounded-full bg-primary-400"></div>
-                        <span class="text-slate-700 font-medium">${b.nama}</span>
-                    </div>
-                    <span class="text-slate-900 font-bold text-lg">${formatNumber(totalGram)} <span class="text-slate-500 font-normal text-sm">gram</span></span>
-                `;
-                listContainer.appendChild(item);
+            // Tambahkan ke Cart
+            productionCart.push({
+                idBarang: idBarang,
+                qtyInput: jumlahInput,
+                satuan: satuan === 'kg' ? 'Kg' : 'Gram',
+                qtyKg: qtyKg
             });
 
-            mainContainer.classList.remove('hidden');
+            // Kosongkan input jumlah agar mudah menambah barang lain
+            document.getElementById('calc-jumlah').value = '';
+            
+            showToast(`${db[idBarang].nama} ditambahkan ke daftar produksi.`);
+            renderKalkulator();
         });
 
-        // Delete Functions (Global)
+        // --- 5. Fungsi Global Hapus & Cart ---
         window.hapusBarang = function(id) {
-            if(confirm(`Yakin ingin menghapus "${db[id].nama}" dan semua resepnya?`)) {
+            if(confirm(`Yakin ingin menghapus "${db[id].nama}"?`)) {
                 delete db[id];
                 saveDB();
-                
-                // Hide calculator result if deleted item was active
-                const calcContainer = document.getElementById('calc-result-container');
-                if(!calcContainer.classList.contains('hidden')) {
-                    calcContainer.classList.add('hidden');
-                }
                 showToast("Barang dihapus.");
             }
         };
@@ -506,75 +537,58 @@
         window.hapusBahan = function(idBarang, indexBahan) {
             db[idBarang].bahan.splice(indexBahan, 1);
             saveDB();
-            showToast("Bahan dihapus.");
         };
 
-        // --- 5. Backup & Restore Functions ---
-        window.backupData = function() {
-            if (Object.keys(db).length === 0) {
-                showToast("Tidak ada data untuk di-backup.");
-                return;
+        window.hapusDariCart = function(index) {
+            productionCart.splice(index, 1);
+            renderKalkulator();
+        };
+
+        window.clearCart = function() {
+            if(confirm("Hapus seluruh rencana produksi?")) {
+                productionCart = [];
+                renderKalkulator();
             }
-            
-            // Konversi database ke format string (JSON)
-            const dataStr = JSON.stringify(db, null, 2);
-            
-            // Buat file Blob (text file)
-            const blob = new Blob([dataStr], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
-            
-            // Buat elemen anchor tersembunyi untuk memicu download
+        };
+
+        // --- 6. Backup & Restore ---
+        window.backupData = function() {
+            if (Object.keys(db).length === 0) { showToast("Tidak ada data untuk di-backup."); return; }
+            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "text/plain" });
             const a = document.createElement("a");
-            a.href = url;
-            
-            // Buat nama file dengan tanggal hari ini
-            const date = new Date().toISOString().slice(0, 10);
-            a.download = `Backup_Resep_${date}.txt`;
-            
-            document.body.appendChild(a);
-            a.click(); // Jalankan download
-            
-            // Bersihkan sisa elemen
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            a.href = URL.createObjectURL(blob);
+            a.download = `Backup_Resep_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(a.href);
             showToast("Data berhasil di-backup (.txt)");
         };
 
         window.restoreData = function(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const contents = e.target.result;
-                    const parsedData = JSON.parse(contents);
-                    
-                    // Validasi sederhana memastikan yang diupload adalah format object JSON yang benar
+                    const parsedData = JSON.parse(e.target.result);
                     if (typeof parsedData === 'object' && !Array.isArray(parsedData) && parsedData !== null) {
-                        if(confirm("Memulihkan data akan menimpa (overwrite) data saat ini. Lanjutkan?")) {
+                        if(confirm("Memulihkan akan menimpa data saat ini. Lanjutkan?")) {
                             db = parsedData;
+                            // Update key local storage jika ganti versi
+                            localStorage.setItem('bahanBakuDB_v3', JSON.stringify(db));
+                            productionCart = []; // Bersihkan kalkulator karena datanya mungkin berbeda
                             saveDB();
                             showToast("Data berhasil dipulihkan!");
                         }
-                    } else {
-                        showToast("Format file tidak valid!");
                     }
-                } catch (err) {
-                    showToast("Gagal memulihkan. Pastikan file .txt adalah hasil backup aplikasi ini.");
-                }
-                
-                // Reset input agar bisa upload file yang sama lagi jika diperlukan
+                } catch (err) { showToast("Gagal. Pastikan file valid."); }
                 event.target.value = '';
             };
-            
             reader.readAsText(file);
         };
 
-        // --- Run on Load ---
+        // --- Init ---
         renderSemua();
 
     </script>
 </body>
 </html>
-
