@@ -2,284 +2,537 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Bahan Baku</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalkulator Terpadu</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans (Sangat modern & rapi) -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Tailwind Config & Custom Styles -->
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
-                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        surface: '#f8fafc'
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'float': '0 10px 30px -5px rgba(37, 99, 235, 0.15)'
                     }
                 }
             }
         }
     </script>
     <style>
-        .view-section {
+        body { background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        
+        /* Smooth Module Transitions */
+        .view-section, .main-module {
             display: none;
             opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(8px);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .view-section.active {
+        .view-section.active, .main-module.active {
             display: block;
             opacity: 1;
             transform: translateY(0);
         }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-
+        /* Scrollbar tersembunyi namun tetap bisa di-scroll */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        /* Input Number Hilangkan Panah */
         input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
+        /* Toast Modern */
         #toast {
             visibility: hidden;
-            background: rgba(17, 24, 39, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: #fff;
             transform: translateY(100px) translateX(-50%);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         #toast.show {
             visibility: visible;
             transform: translateY(0) translateX(-50%);
         }
+
+        /* Styling Premium Kalkulator Umum */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .calc-btn {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            height: 64px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            cursor: pointer;
+        }
+        .calc-btn:active { transform: scale(0.92); background-color: #f8fafc; }
+        .calc-btn.op { background-color: #eff6ff; color: #2563eb; border-color: #dbeafe; }
+        .calc-btn.op:active { background-color: #dbeafe; }
+        .calc-btn.eq { background-color: #2563eb; color: white; border-color: #2563eb; grid-column: span 2; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        .calc-btn.eq:active { background-color: #1d4ed8; }
+        .calc-btn.clear { background-color: #fef2f2; color: #ef4444; border-color: #fee2e2; }
+
+        /* Segmented Control Base */
+        .segmented-control {
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 999px;
+            display: flex;
+        }
+        .segmented-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .segmented-btn.active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen antialiased pb-20">
+<body class="text-slate-800 font-sans min-h-screen antialiased flex flex-col">
 
-    <header class="pt-10 pb-6 text-center px-4">
-        <div class="inline-flex items-center justify-center p-3 bg-primary-100 text-primary-600 rounded-2xl mb-4">
-            <i class="ph ph-scales text-3xl"></i>
+    <!-- Navbar / App Bar -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="p-2 -ml-2 text-slate-500 hover:text-primary-600 transition-colors rounded-full hover:bg-slate-100">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+                        <i id="header-icon" class="ph ph-calculator text-lg font-bold"></i>
+                    </div>
+                    <h1 id="header-title" class="font-bold text-slate-800 text-lg tracking-tight">Kalkulator Umum</h1>
+                </div>
+            </div>
+            <!-- Optional Right Icon -->
+            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                <i class="ph ph-user text-sm"></i>
+            </div>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Kalkulator Produksi</h1>
-        <p class="text-slate-500 text-sm mt-1">Hitung & gabungkan kebutuhan bahan baku</p>
-    </header>
+    </nav>
 
-    <main class="max-w-3xl mx-auto px-4">
-        
-        <!-- Toggle Navigation -->
-        <div class="flex p-1 bg-slate-200/60 rounded-2xl max-w-sm mx-auto mb-8 shadow-inner">
-            <button onclick="switchTab('kalkulator')" id="tab-kalkulator" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2">
-                <i class="ph ph-calculator text-lg"></i> Hitung
-            </button>
-            <button onclick="switchTab('pengaturan')" id="tab-pengaturan" class="flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2">
-                <i class="ph ph-sliders-horizontal text-lg"></i> Pengaturan
-            </button>
+    <!-- Sidebar Overlay & Menu -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden z-40 transition-opacity opacity-0" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-[280px] bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-6 pb-4">
+            <h2 class="font-bold text-xl text-slate-800 tracking-tight">Menu Utama</h2>
+            <p class="text-xs text-slate-500 mt-1">Pilih mode perhitungan</p>
         </div>
+        <nav class="px-4 space-y-1.5 flex-1 overflow-y-auto">
+            <button onclick="switchModule('module-biasa')" id="nav-module-biasa" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold bg-primary-50 text-primary-600 transition-all">
+                <i class="ph ph-calculator text-xl"></i> Kalkulator Umum
+            </button>
+            <button onclick="switchModule('module-bahan')" id="nav-module-bahan" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="ph ph-scales text-xl"></i> Kalkulator Bahan Baku
+            </button>
+            <button onclick="switchModule('module-lembur')" id="nav-module-lembur" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="ph ph-money text-xl"></i> Kalkulator Lemburan
+            </button>
+        </nav>
+        <div class="p-6 mt-auto">
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kalkulator Terpadu</p>
+                <p class="text-[10px] text-slate-400 mt-1">Versi 5.0 Premium</p>
+            </div>
+        </div>
+    </div>
 
-        <!-- ==================== VIEW: KALKULATOR ==================== -->
-        <div id="view-kalkulator" class="view-section active">
+    <!-- Main Content Area -->
+    <main class="max-w-3xl mx-auto w-full px-4 pt-6 pb-24 flex-1">
+
+        <!-- ==================== MODULE 1: KALKULATOR UMUM ==================== -->
+        <div id="module-biasa" class="main-module active space-y-6">
             
-            <!-- Form Tambah ke Kalkulasi -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-indigo-500"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <form id="calc-form" class="space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Barang yang diproduksi</label>
-                            <div class="relative">
-                                <i class="ph ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none"></i>
-                                <select id="calc-barang" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
-                                    <!-- Options -->
+                <!-- Kalkulator Standar -->
+                <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6">
+                    <!-- Display Kalkulator -->
+                    <div class="bg-slate-50 rounded-2xl p-5 mb-5 border border-slate-100 flex flex-col justify-end min-h-[100px] overflow-hidden">
+                        <div class="text-slate-400 text-sm font-medium tracking-wide text-right mb-1 h-5 overflow-hidden" id="calc-history"></div>
+                        <div class="text-slate-800 text-4xl font-bold text-right overflow-x-auto overflow-y-hidden whitespace-nowrap" id="calc-display">0</div>
+                    </div>
+                    
+                    <!-- Keypad -->
+                    <div class="calc-grid">
+                        <button onclick="clearCalc()" class="calc-btn clear">C</button>
+                        <button onclick="delCalc()" class="calc-btn clear"><i class="ph ph-backspace"></i></button>
+                        <button onclick="percentCalc()" class="calc-btn op">%</button>
+                        <button onclick="inputCalc('/')" class="calc-btn op">&divide;</button>
+                        
+                        <button onclick="inputCalc('7')" class="calc-btn">7</button>
+                        <button onclick="inputCalc('8')" class="calc-btn">8</button>
+                        <button onclick="inputCalc('9')" class="calc-btn">9</button>
+                        <button onclick="inputCalc('*')" class="calc-btn op">&times;</button>
+                        
+                        <button onclick="inputCalc('4')" class="calc-btn">4</button>
+                        <button onclick="inputCalc('5')" class="calc-btn">5</button>
+                        <button onclick="inputCalc('6')" class="calc-btn">6</button>
+                        <button onclick="inputCalc('-')" class="calc-btn op">&minus;</button>
+                        
+                        <button onclick="inputCalc('1')" class="calc-btn">1</button>
+                        <button onclick="inputCalc('2')" class="calc-btn">2</button>
+                        <button onclick="inputCalc('3')" class="calc-btn">3</button>
+                        <button onclick="inputCalc('+')" class="calc-btn op">&plus;</button>
+                        
+                        <button onclick="inputCalc('.')" class="calc-btn text-2xl font-bold">.</button>
+                        <button onclick="inputCalc('0')" class="calc-btn">0</button>
+                        <button onclick="calculateResult()" class="calc-btn eq">=</button>
+                    </div>
+                </div>
+
+                <!-- Konversi Satuan Berat -->
+                <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 relative overflow-hidden">
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-6">
+                        <i class="ph ph-arrows-left-right text-primary-500 text-xl"></i> Konversi Berat
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-2 focus-within:ring-primary-100 transition-all">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nilai Awal</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="conv-input" value="1" step="any" oninput="convertWeight()" class="flex-1 bg-transparent border-0 text-slate-800 text-xl font-bold outline-none w-full p-0">
+                                <div class="w-px h-6 bg-slate-200"></div>
+                                <select id="conv-from" onchange="convertWeight()" class="bg-transparent border-0 text-primary-600 font-bold outline-none cursor-pointer appearance-none text-right pr-4 relative z-10 w-24">
+                                    <option value="mg">mg</option>
+                                    <option value="g">Gram</option>
+                                    <option value="ons">Ons</option>
+                                    <option value="pon">Pon</option>
+                                    <option value="kg" selected>Kg</option>
+                                    <option value="kuintal">Kuintal</option>
+                                    <option value="ton">Ton</option>
                                 </select>
-                                <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Jumlah Produksi</label>
-                            <div class="relative flex items-center bg-slate-50 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden border border-transparent focus-within:border-primary-100 shadow-sm">
-                                <i class="ph ph-weight absolute left-4 text-slate-400 text-xl pointer-events-none"></i>
-                                <input type="number" id="calc-jumlah" step="0.001" min="0.001" placeholder="Misal: 2.5" class="flex-1 min-w-0 bg-transparent border-0 text-slate-800 py-3.5 pl-12 pr-4 outline-none" required>
-                                <div class="border-l border-slate-200 h-8"></div>
-                                <div class="relative shrink-0">
-                                    <select id="calc-satuan" class="bg-transparent text-slate-700 font-semibold py-3.5 pl-4 pr-10 outline-none cursor-pointer appearance-none hover:text-slate-900 transition-colors">
+
+                        <div class="flex justify-center -my-3 relative z-10">
+                            <div class="bg-white p-2 rounded-full border border-slate-100 shadow-sm text-primary-500">
+                                <i class="ph ph-arrow-down text-lg font-bold"></i>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-2 focus-within:ring-primary-100 transition-all">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Konversi Ke</label>
+                            <div class="flex items-center justify-end">
+                                <select id="conv-to" onchange="convertWeight()" class="bg-transparent border-0 text-primary-600 font-bold outline-none cursor-pointer appearance-none text-right pr-4 relative z-10 w-full text-xl">
+                                    <option value="mg">Miligram (mg)</option>
+                                    <option value="g" selected>Gram (g)</option>
+                                    <option value="ons">Ons (hg)</option>
+                                    <option value="pon">Pon (500g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="kuintal">Kuintal (100kg)</option>
+                                    <option value="ton">Ton (1000kg)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-5 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-float flex flex-col items-center justify-center text-white">
+                            <span class="text-primary-100 text-xs font-medium uppercase tracking-wider mb-1">Hasil Konversi</span>
+                            <span id="conv-result" class="text-3xl font-bold tracking-tight">1.000 g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2: KALKULATOR BAHAN BAKU ==================== -->
+        <div id="module-bahan" class="main-module">
+            
+            <!-- Segmented Control (Mac Style) -->
+            <div class="max-w-xs mx-auto mb-8">
+                <div class="segmented-control shadow-inner border border-slate-200/50">
+                    <button onclick="switchTabBahanBaku('kalkulator')" id="tab-bahan-kalkulator" class="segmented-btn active flex items-center justify-center gap-2">
+                        <i class="ph ph-calculator"></i> Kalkulasi
+                    </button>
+                    <button onclick="switchTabBahanBaku('pengaturan')" id="tab-bahan-pengaturan" class="segmented-btn flex items-center justify-center gap-2">
+                        <i class="ph ph-database"></i> Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Kalkulasi Bahan Baku -->
+            <div id="view-kalkulator" class="view-section active space-y-6">
+                <!-- Form Tambah ke Kalkulasi -->
+                <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 sm:p-8">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-5">
+                        <i class="ph ph-plus-circle text-primary-500 text-xl"></i> Tambah ke Rencana
+                    </h2>
+                    <form id="calc-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Pilih Barang</label>
+                                <select id="calc-barang" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none font-medium" required></select>
+                                <i class="ph ph-caret-down absolute right-4 top-[38px] text-slate-400 pointer-events-none"></i>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Kuantitas</label>
+                                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl focus-within:ring-2 focus-within:ring-primary-500 focus-within:bg-white transition-all overflow-hidden">
+                                    <input type="number" id="calc-jumlah" step="0.001" min="0.001" placeholder="Jumlah" class="flex-1 min-w-0 bg-transparent border-0 text-slate-800 py-3.5 pl-4 pr-2 outline-none font-medium" required>
+                                    <div class="w-px h-6 bg-slate-200"></div>
+                                    <select id="calc-satuan" class="bg-transparent text-slate-600 font-bold py-3.5 px-4 outline-none cursor-pointer appearance-none text-center">
                                         <option value="kg">Kg</option>
-                                        <option value="gram">Gram</option>
+                                        <option value="gram">Gr</option>
                                     </select>
-                                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-primary-600 text-white font-medium py-3.5 px-6 rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-2">
-                        <i class="ph ph-plus-circle text-lg"></i> Tambahkan ke Daftar Produksi
-                    </button>
-                </form>
-            </div>
-
-            <!-- Hasil Kalkulasi (List Produksi & Grand Total) -->
-            <div id="calc-result-container" class="hidden space-y-6">
-                
-                <!-- Rencana Produksi -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <i class="ph ph-clipboard-text text-primary-500 text-xl"></i> Rencana Produksi
-                        </h3>
-                        <button onclick="clearCart()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-semibold transition-colors">
-                            Bersihkan Daftar
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-primary-600 text-white font-semibold py-4 rounded-2xl transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+                            Tambah ke Daftar <i class="ph ph-arrow-right font-bold"></i>
                         </button>
-                    </div>
-                    <div id="calc-cart-list" class="space-y-2">
-                        <!-- Item produksi render di sini -->
-                    </div>
+                    </form>
                 </div>
-
-                <!-- Grand Total Bahan Baku -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
-                    <!-- Aksen bg -->
-                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-50 rounded-full blur-3xl opacity-60"></div>
-                    
-                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-4 relative z-10">
-                        <i class="ph ph-shopping-cart text-emerald-500 text-xl"></i> Total Kebutuhan Bahan (Gabungan)
-                    </h3>
-                    <div id="calc-grand-total-list" class="space-y-3 relative z-10">
-                        <!-- Total bahan baku render di sini -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ==================== VIEW: PENGATURAN ==================== -->
-        <div id="view-pengaturan" class="view-section">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 
-                <!-- Kolom Kiri -->
-                <div class="space-y-6">
-                    <!-- 1. Tambah Barang -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-                        <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="ph ph-plus-circle text-primary-500 text-xl"></i> Tambah Barang Baru
-                        </h2>
-                        <form id="add-barang-form" class="space-y-3">
-                            <input type="text" id="input-nama-barang" placeholder="Nama Barang (Cth: Roti Manis)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
-                            <button type="submit" class="w-full bg-primary-50 text-primary-600 hover:bg-primary-100 font-semibold py-3 px-4 rounded-2xl transition-colors">
-                                Simpan Barang
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 2. Tambah Resep/Bahan -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-                        <div class="mb-4">
-                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                <i class="ph ph-list-plus text-primary-500 text-xl"></i> Resep per 1 Kg
-                            </h2>
-                            <p class="text-xs text-slate-500 mt-1">Tambahkan bahan yang dibutuhkan untuk 1 Kg barang.</p>
-                        </div>
-                        <form id="add-bahan-form" class="space-y-4">
-                            <div class="relative">
-                                <select id="select-barang-settings" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none cursor-pointer" required>
-                                    <option value="">-- Pilih Barang --</option>
-                                </select>
-                                <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                <!-- Hasil Kalkulasi Bahan -->
+                <div id="calc-result-container" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        <!-- Rencana List -->
+                        <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6">
+                            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Daftar Rencana</h3>
+                                <button onclick="clearCart()" class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors bg-red-50 px-3 py-1.5 rounded-lg">Reset</button>
                             </div>
-                            
-                            <input type="text" id="input-nama-bahan" placeholder="Nama Bahan (Cth: Tepung Terigu)" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
-                            
-                            <div class="relative">
-                                <input type="number" id="input-jumlah-bahan" step="0.001" min="0.001" placeholder="Jumlah Kebutuhan" class="w-full bg-slate-50 border-0 text-slate-800 rounded-2xl py-3 pl-4 pr-16 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none" required>
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Gram</span>
-                            </div>
-
-                            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-2xl transition-all shadow-sm mt-2">
-                                Tambah Bahan
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 3. Backup & Restore -->
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
-                        <div class="mb-4">
-                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                <i class="ph ph-cloud-arrow-up text-primary-500 text-xl"></i> Backup & Restore Data
-                            </h2>
-                            <p class="text-xs text-slate-500 mt-1">Simpan atau pulihkan data (Format .txt).</p>
+                            <div id="calc-cart-list" class="space-y-3"></div>
                         </div>
-                        <div class="flex gap-3 mt-4">
-                            <button onclick="backupData()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-2 rounded-2xl transition-colors flex items-center justify-center gap-2 text-sm">
-                                <i class="ph ph-download-simple text-lg"></i> Backup
-                            </button>
-                            <label class="flex-1 bg-primary-50 text-primary-600 hover:bg-primary-100 font-semibold py-3 px-2 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm">
+                        
+                        <!-- Grand Total List -->
+                        <div class="bg-slate-900 text-white rounded-3xl shadow-float p-6 relative overflow-hidden">
+                            <!-- Hiasan Background -->
+                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-primary-500/20 rounded-full blur-2xl"></div>
+                            
+                            <h3 class="text-sm font-bold text-primary-200 uppercase tracking-wider mb-5 pb-3 border-b border-slate-700/50 flex items-center gap-2">
+                                <i class="ph ph-list-checks text-lg"></i> Total Kebutuhan
+                            </h3>
+                            <div id="calc-grand-total-list" class="space-y-4 relative z-10"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Pengaturan Bahan Baku -->
+            <div id="view-pengaturan" class="view-section">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    
+                    <!-- Kolom Kiri -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6">
+                            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Buat Barang</h2>
+                            <form id="add-barang-form" class="flex gap-2">
+                                <input type="text" id="input-nama-barang" placeholder="Nama Barang Jadi" class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-2.5 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none text-sm font-medium" required>
+                                <button type="submit" class="bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">Buat</button>
+                            </form>
+                        </div>
+
+                        <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6">
+                            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Resep (Per 1 Kg)</h2>
+                            <form id="add-bahan-form" class="space-y-3">
+                                <div class="relative">
+                                    <select id="select-barang-settings" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none text-sm font-medium" required></select>
+                                    <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                </div>
+                                <input type="text" id="input-nama-bahan" placeholder="Nama Bahan Baku" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none text-sm font-medium" required>
+                                <div class="relative">
+                                    <input type="number" id="input-jumlah-bahan" step="0.001" min="0.001" placeholder="Jumlah (Gram)" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none text-sm font-medium" required>
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">GRAM</span>
+                                </div>
+                                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-all shadow-sm">Tambah Resep</button>
+                            </form>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button onclick="backupData()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 px-2 rounded-2xl transition-colors shadow-sm text-xs flex items-center justify-center gap-2"><i class="ph ph-download-simple text-lg"></i> Backup .txt</button>
+                            <label class="flex-1 bg-white border border-primary-200 text-primary-600 hover:bg-primary-50 font-bold py-3 px-2 rounded-2xl transition-colors shadow-sm cursor-pointer text-xs flex items-center justify-center gap-2">
                                 <i class="ph ph-upload-simple text-lg"></i> Restore
                                 <input type="file" id="restore-file" accept=".txt" class="hidden" onchange="restoreData(event)">
                             </label>
                         </div>
                     </div>
-                </div>
 
-                <!-- Kolom Kanan: Database Resep -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:h-[750px] flex flex-col">
-                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <i class="ph ph-database text-primary-500 text-xl"></i> Database Resep
-                    </h2>
-                    <div id="daftar-barang-container" class="flex-1 overflow-y-auto space-y-4 pr-2">
-                        <!-- List barang dirender disini -->
+                    <!-- Kolom Kanan -->
+                    <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 md:h-[650px] flex flex-col relative">
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Database Resep</h2>
+                        <div id="daftar-barang-container" class="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-hide"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3: KALKULATOR LEMBURAN ==================== -->
+        <div id="module-lembur" class="main-module space-y-6">
+            
+            <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 sm:p-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 border-b border-slate-100 pb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Gaji Bulanan Pokok</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-4 text-slate-400 font-bold">Rp</span>
+                            <input type="number" id="lembur-gaji" placeholder="4.500.000" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 pl-12 pr-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none font-bold text-lg" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Sistem Hari Kerja</label>
+                        <div class="relative">
+                            <select id="lembur-sistem" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none font-medium">
+                                <option value="5">5 Hari (Senin - Jumat)</option>
+                                <option value="6">6 Hari (Senin - Sabtu)</option>
+                            </select>
+                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        </div>
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Sesi Lembur</label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <select id="lembur-tipe" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3.5 pl-4 pr-10 focus:ring-2 focus:ring-primary-500 transition-all appearance-none outline-none font-medium">
+                                <option value="kerja">Lembur Hari Kerja Biasa</option>
+                                <option value="libur">Lembur Hari Libur Nasional / Rest Day</option>
+                            </select>
+                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        </div>
+                        <div class="relative w-full sm:w-32">
+                            <input type="number" id="lembur-jam" step="0.5" min="0.5" placeholder="Jam" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3.5 px-4 focus:ring-2 focus:ring-primary-500 transition-all outline-none font-bold text-center">
+                        </div>
+                        <button onclick="addLembur()" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                            <i class="ph ph-plus font-bold"></i> Tambah
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hasil Hitung Lembur (Premium Dark Card) -->
+            <div id="lembur-result-container" class="bg-slate-900 rounded-3xl shadow-float p-6 sm:p-8 hidden relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-64 h-64 bg-primary-600/20 rounded-full blur-3xl"></div>
+                
+                <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4 relative z-10">
+                    <h3 class="text-sm font-bold text-primary-200 uppercase tracking-wider">Rincian Bayaran</h3>
+                    <button onclick="clearLembur()" class="text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">Reset Total</button>
+                </div>
+                
+                <div id="lembur-list" class="space-y-3 mb-6 relative z-10"></div>
+                
+                <div class="pt-5 border-t border-slate-700 flex justify-between items-end relative z-10">
+                    <div>
+                        <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Estimasi Diterima</span>
+                        <p class="text-xs text-primary-300 mt-1 font-medium" id="lembur-upah-sejam"></p>
+                    </div>
+                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Rp 0</span>
+                </div>
             </div>
         </div>
 
     </main>
 
+    <!-- Modal Edit Bahan Baku -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center px-4 transition-opacity">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl transform scale-100 transition-transform">
+            <h3 class="text-lg font-bold text-slate-800 mb-5 border-b border-slate-100 pb-3">Edit Bahan Baku</h3>
+            <form id="edit-bahan-form" class="space-y-4">
+                <input type="hidden" id="edit-id-barang">
+                <input type="hidden" id="edit-index-bahan">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Nama Bahan</label>
+                    <input type="text" id="edit-nama-bahan" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none font-medium" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Gram</label>
+                    <input type="number" id="edit-jumlah-bahan" step="0.001" min="0.001" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none font-bold" required>
+                </div>
+                <div class="flex gap-3 pt-3">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition-colors">Batal</button>
+                    <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-8 left-1/2 z-50 flex items-center gap-3 px-6 py-3.5 rounded-full shadow-xl">
-        <i class="ph ph-info text-primary-400 text-xl"></i>
-        <span id="toast-msg" class="text-sm font-medium">Pesan notifikasi</span>
+    <div id="toast" class="fixed bottom-10 left-1/2 z-[60] flex items-center gap-3 px-5 py-3 rounded-full shadow-lg border border-slate-700">
+        <div class="w-2 h-2 rounded-full bg-primary-400"></div>
+        <span id="toast-msg" class="text-sm font-semibold tracking-wide">Notifikasi</span>
     </div>
 
     <!-- Application Logic -->
     <script>
-        // --- 1. State Management ---
-        let db = JSON.parse(localStorage.getItem('bahanBakuDB_v3')) || {};
-        let productionCart = []; // Array untuk menyimpan daftar barang yang akan diproduksi
-
-        function saveDB() {
-            localStorage.setItem('bahanBakuDB_v3', JSON.stringify(db));
-            renderSemua();
+        // ========================= GLOBAL UI & SIDEBAR =========================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
         }
 
-        // --- 2. UI Utilities ---
-        function switchTab(tabName) {
-            const btnCalc = document.getElementById('tab-kalkulator');
-            const btnPengaturan = document.getElementById('tab-pengaturan');
+        function switchModule(moduleName) {
+            // Update Active Menu Styling
+            document.querySelectorAll('#sidebar nav button').forEach(btn => {
+                btn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all";
+            });
+            const activeBtn = document.getElementById('nav-' + moduleName);
+            activeBtn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-bold bg-primary-50 text-primary-600 transition-all";
+            
+            // Switch Modules
+            document.querySelectorAll('.main-module').forEach(el => el.classList.remove('active'));
+            setTimeout(() => { document.getElementById(moduleName).classList.add('active'); }, 100);
 
-            if(tabName === 'kalkulator') {
-                btnCalc.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2";
-                btnPengaturan.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2";
-            } else {
-                btnPengaturan.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm bg-white text-slate-800 flex items-center justify-center gap-2";
-                btnCalc.className = "flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all duration-300 flex items-center justify-center gap-2";
+            // Update Header
+            const title = document.getElementById('header-title');
+            const icon = document.getElementById('header-icon');
+
+            if (moduleName === 'module-biasa') {
+                title.innerText = 'Kalkulator Umum';
+                icon.className = 'ph ph-calculator text-lg font-bold';
+            } else if (moduleName === 'module-bahan') {
+                title.innerText = 'Bahan Baku';
+                icon.className = 'ph ph-scales text-lg font-bold';
+            } else if (moduleName === 'module-lembur') {
+                title.innerText = 'Hitung Lembur';
+                icon.className = 'ph ph-money text-lg font-bold';
             }
 
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            setTimeout(() => { document.getElementById('view-' + tabName).classList.add('active'); }, 50);
+            toggleSidebar(); // Close sidebar after selecting
         }
 
         function showToast(message) {
@@ -293,36 +546,133 @@
             return num.toLocaleString('id-ID', { maximumFractionDigits: 3 }); 
         }
 
-        // --- 3. Rendering ---
-        function renderSemua() {
-            renderDropdown();
-            renderDaftarBarang();
-            renderKalkulator();
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+        }
+
+        // ========================= MODULE 1: KALKULATOR UMUM =========================
+        let calcInput = "0";
+        let calcExpression = "";
+        const calcDisplay = document.getElementById('calc-display');
+        const calcHistory = document.getElementById('calc-history');
+
+        function updateCalcDisplay() {
+            // Format number gracefully for display
+            let displayStr = calcInput;
+            if(!isNaN(calcInput) && calcInput !== "" && calcInput !== "Error" && !calcInput.endsWith('.')){
+                const parts = calcInput.split('.');
+                parts[0] = parseInt(parts[0]).toLocaleString('id-ID');
+                displayStr = parts.join(',');
+            } else {
+                 displayStr = calcInput.replace('.', ',');
+            }
+            
+            calcDisplay.innerText = displayStr;
+            calcHistory.innerText = calcExpression.replace('.', ',').replace('/', '÷').replace('*', '×');
+            calcDisplay.scrollLeft = calcDisplay.scrollWidth;
+        }
+
+        function inputCalc(val) {
+            if (calcInput === "0" || calcInput === "Error") {
+                if(val !== '.') calcInput = "";
+            }
+            if (calcInput === "Error") calcInput = "";
+            calcInput += val;
+            updateCalcDisplay();
+        }
+
+        function clearCalc() {
+            calcInput = "0";
+            calcExpression = "";
+            updateCalcDisplay();
+        }
+
+        function delCalc() {
+            if (calcInput.length > 1) {
+                calcInput = calcInput.slice(0, -1);
+            } else {
+                calcInput = "0";
+            }
+            updateCalcDisplay();
+        }
+
+        function percentCalc() {
+            try {
+                const evaluated = new Function('return ' + calcInput)();
+                calcInput = String(evaluated / 100);
+                updateCalcDisplay();
+            } catch(e) { calcInput = "Error"; updateCalcDisplay(); }
+        }
+
+        function calculateResult() {
+            try {
+                calcExpression = calcInput + " =";
+                let result = new Function('return ' + calcInput)(); 
+                result = parseFloat(result.toFixed(10));
+                calcInput = String(result);
+                updateCalcDisplay();
+            } catch(e) {
+                calcInput = "Error";
+                updateCalcDisplay();
+            }
+        }
+
+        // Logic Konversi Berat
+        const weightRates = { mg: 0.001, g: 1, ons: 100, pon: 500, kg: 1000, kuintal: 100000, ton: 1000000 };
+        function convertWeight() {
+            const val = parseFloat(document.getElementById('conv-input').value);
+            const from = document.getElementById('conv-from').value;
+            const to = document.getElementById('conv-to').value;
+            if(!isNaN(val)) {
+                const inGrams = val * weightRates[from];
+                const result = inGrams / weightRates[to];
+                document.getElementById('conv-result').innerText = formatNumber(result) + " " + document.getElementById('conv-to').options[document.getElementById('conv-to').selectedIndex].text.split(' ')[0];
+            } else { document.getElementById('conv-result').innerText = "-"; }
+        }
+
+        // ========================= MODULE 2: KALKULATOR BAHAN BAKU =========================
+        let db = JSON.parse(localStorage.getItem('bahanBakuDB_v4')) || {};
+        let productionCart = [];
+
+        function saveDB() {
+            localStorage.setItem('bahanBakuDB_v4', JSON.stringify(db));
+            renderSemuaBahanBaku();
+        }
+
+        function switchTabBahanBaku(tabName) {
+            const btnCalc = document.getElementById('tab-bahan-kalkulator');
+            const btnPengaturan = document.getElementById('tab-bahan-pengaturan');
+
+            if(tabName === 'kalkulator') {
+                btnCalc.className = "segmented-btn active flex items-center justify-center gap-2";
+                btnPengaturan.className = "segmented-btn flex items-center justify-center gap-2";
+            } else {
+                btnPengaturan.className = "segmented-btn active flex items-center justify-center gap-2";
+                btnCalc.className = "segmented-btn flex items-center justify-center gap-2";
+            }
+
+            document.getElementById('view-kalkulator').classList.remove('active');
+            document.getElementById('view-pengaturan').classList.remove('active');
+            setTimeout(() => { document.getElementById('view-' + tabName).classList.add('active'); }, 50);
+        }
+
+        function renderSemuaBahanBaku() {
+            renderDropdown(); renderDaftarBarang(); renderKalkulator();
         }
 
         function renderDropdown() {
             const calcSelect = document.getElementById('calc-barang');
             const setSelect = document.getElementById('select-barang-settings');
-            
             const currentCalcVal = calcSelect.value;
             const currentSetVal = setSelect.value;
-
-            let emptyOption = '<option value="" disabled selected>-- Pilih Barang --</option>';
-            let optionsHTML = emptyOption;
-            
+            let optionsHTML = '<option value="" disabled selected>-- Pilih Barang Jadi --</option>';
             let count = 0;
-            for (const id in db) {
-                optionsHTML += `<option value="${id}">${db[id].nama}</option>`;
-                count++;
-            }
-
+            for (const id in db) { optionsHTML += `<option value="${id}">${db[id].nama}</option>`; count++; }
             if (count === 0) {
-                const emptyState = '<option value="" disabled selected>Belum ada data barang</option>';
-                setSelect.innerHTML = emptyState;
-                calcSelect.innerHTML = emptyState;
+                const emptyState = '<option value="" disabled selected>Database kosong</option>';
+                setSelect.innerHTML = emptyState; calcSelect.innerHTML = emptyState;
             } else {
-                setSelect.innerHTML = optionsHTML;
-                calcSelect.innerHTML = optionsHTML;
+                setSelect.innerHTML = optionsHTML; calcSelect.innerHTML = optionsHTML;
                 if (db[currentCalcVal]) calcSelect.value = currentCalcVal;
                 if (db[currentSetVal]) setSelect.value = currentSetVal;
             }
@@ -331,264 +681,190 @@
         function renderDaftarBarang() {
             const container = document.getElementById('daftar-barang-container');
             container.innerHTML = '';
-
             if (Object.keys(db).length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-10 px-4">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-400 mb-3">
-                            <i class="ph ph-empty text-3xl"></i>
-                        </div>
-                        <p class="text-slate-500 text-sm">Belum ada resep yang dibuat.</p>
-                    </div>`;
-                return;
+                container.innerHTML = `<div class="text-center py-10 opacity-50"><i class="ph ph-empty text-3xl mb-2"></i><p class="text-xs">Database kosong.</p></div>`; return;
             }
-
             for (const id in db) {
                 const barang = db[id];
                 const card = document.createElement('div');
-                card.className = 'bg-slate-50 rounded-2xl border border-slate-100 p-4 transition-all hover:border-slate-200';
-                
-                let html = `
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                            <i class="ph ph-package text-primary-500"></i> ${barang.nama}
-                        </h3>
-                        <button onclick="hapusBarang('${id}')" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Hapus Barang">
-                            <i class="ph ph-trash text-lg"></i>
-                        </button>
-                    </div>
-                    <div class="space-y-2">
-                `;
-
-                if (barang.bahan.length === 0) {
-                    html += `<p class="text-xs text-slate-400 italic">Belum ada bahan.</p>`;
-                } else {
+                card.className = 'bg-slate-50 border border-slate-200 rounded-2xl p-4';
+                let html = `<div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200/60"><h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="ph ph-package text-primary-500"></i> ${barang.nama}</h3><div class="flex gap-1"><button onclick="editBarang('${id}')" class="text-slate-400 hover:text-blue-500 bg-white p-1 rounded border border-slate-100 shadow-sm"><i class="ph ph-pencil-simple"></i></button><button onclick="hapusBarang('${id}')" class="text-slate-400 hover:text-red-500 bg-white p-1 rounded border border-slate-100 shadow-sm"><i class="ph ph-trash"></i></button></div></div><div class="space-y-1.5">`;
+                if (barang.bahan.length === 0) html += `<p class="text-xs text-slate-400 italic">Belum ada resep bahan.</p>`;
+                else {
                     barang.bahan.forEach((b, index) => {
-                        html += `
-                            <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-slate-100">
-                                <span class="text-sm text-slate-600">${b.nama}</span>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-sm font-semibold text-slate-800">${formatNumber(b.qty)} <span class="text-slate-400 font-normal text-xs">g</span></span>
-                                    <button onclick="hapusBahan('${id}', ${index})" class="text-slate-300 hover:text-red-500 transition-colors">
-                                        <i class="ph ph-x-circle text-base"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
+                        html += `<div class="flex justify-between items-center text-sm"><span class="text-slate-600 font-medium">${b.nama}</span><div class="flex items-center gap-2"><span class="font-bold">${formatNumber(b.qty)}<span class="text-[10px] text-slate-400 ml-1">g</span></span><button onclick="editBahan('${id}', ${index})" class="text-slate-300 hover:text-blue-500"><i class="ph ph-pencil-simple text-xs"></i></button><button onclick="hapusBahan('${id}', ${index})" class="text-slate-300 hover:text-red-500"><i class="ph ph-x-circle text-xs"></i></button></div></div>`;
                     });
                 }
-                html += `</div>`;
-                card.innerHTML = html;
-                container.appendChild(card);
+                html += `</div>`; card.innerHTML = html; container.appendChild(card);
             }
         }
 
-        // Fungsi baru untuk merender daftar kalkulasi gabungan
         function renderKalkulator() {
             const container = document.getElementById('calc-result-container');
             const cartList = document.getElementById('calc-cart-list');
             const grandTotalList = document.getElementById('calc-grand-total-list');
-            
-            // Filter cart untuk membuang item yang barangnya sudah dihapus dari pengaturan
             productionCart = productionCart.filter(item => db[item.idBarang]);
-
-            if (productionCart.length === 0) {
-                container.classList.add('hidden');
-                return;
-            }
-
-            container.classList.remove('hidden');
-            cartList.innerHTML = '';
-            grandTotalList.innerHTML = '';
-
-            // 1. Render Rencana Produksi (Cart)
-            let grandTotalBahan = {}; // Objek untuk menggabungkan total bahan
-
+            
+            if (productionCart.length === 0) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden'); cartList.innerHTML = ''; grandTotalList.innerHTML = '';
+            
+            let grandTotalBahan = {};
             productionCart.forEach((item, index) => {
                 const barang = db[item.idBarang];
-                
-                // Tambahkan elemen ke UI Daftar Rencana
                 const cartItem = document.createElement('div');
-                cartItem.className = "flex justify-between items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-100";
-                cartItem.innerHTML = `
-                    <div>
-                        <p class="text-sm font-bold text-slate-800">${barang.nama}</p>
-                        <p class="text-xs text-slate-500">Target: ${formatNumber(item.qtyInput)} ${item.satuan}</p>
-                    </div>
-                    <button onclick="hapusDariCart(${index})" class="text-slate-400 hover:text-red-500 transition-colors p-2 bg-white rounded-lg border border-slate-100">
-                        <i class="ph ph-trash text-lg"></i>
-                    </button>
-                `;
+                cartItem.className = "flex justify-between items-center py-2 border-b border-slate-100 last:border-0";
+                cartItem.innerHTML = `<div><p class="text-sm font-bold text-slate-800">${barang.nama}</p><p class="text-xs font-semibold text-primary-600">${formatNumber(item.qtyInput)} ${item.satuan}</p></div><button onclick="hapusDariCart(${index})" class="text-slate-400 hover:text-red-500 p-1.5 bg-slate-50 rounded-lg"><i class="ph ph-trash text-lg"></i></button>`;
                 cartList.appendChild(cartItem);
-
-                // 2. Kalkulasi Penggabungan Bahan Baku
+                
                 barang.bahan.forEach(b => {
-                    // Gabungkan berdasarkan nama bahan baku (dibuat huruf kecil agar tidak case-sensitive)
                     const keyBahan = b.nama.trim().toLowerCase();
                     const totalGram = b.qty * item.qtyKg;
-
-                    if (!grandTotalBahan[keyBahan]) {
-                        grandTotalBahan[keyBahan] = {
-                            namaAsli: b.nama.trim(), // Simpan nama asli untuk ditampilkan
-                            total: 0
-                        };
-                    }
+                    if (!grandTotalBahan[keyBahan]) grandTotalBahan[keyBahan] = { namaAsli: b.nama.trim(), total: 0 };
                     grandTotalBahan[keyBahan].total += totalGram;
                 });
             });
-
-            // 3. Render Hasil Gabungan (Grand Total)
-            const arrayBahan = Object.values(grandTotalBahan);
             
-            if (arrayBahan.length === 0) {
-                grandTotalList.innerHTML = '<p class="text-sm text-red-500 italic">Barang dalam rencana produksi tidak memiliki data resep.</p>';
-            } else {
-                // Urutkan abjad berdasarkan nama bahan
+            const arrayBahan = Object.values(grandTotalBahan);
+            if (arrayBahan.length === 0) grandTotalList.innerHTML = '<p class="text-xs text-slate-400 italic">Tidak ada bahan baku yang dihitung.</p>';
+            else {
                 arrayBahan.sort((a, b) => a.namaAsli.localeCompare(b.namaAsli));
-                
                 arrayBahan.forEach(bahan => {
                     const el = document.createElement('div');
-                    el.className = "flex justify-between items-center py-3 border-b border-slate-100 last:border-0";
-                    el.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                            <span class="text-slate-700 font-medium">${bahan.namaAsli}</span>
-                        </div>
-                        <span class="text-slate-900 font-bold text-lg">${formatNumber(bahan.total)} <span class="text-slate-500 font-normal text-sm">gram</span></span>
-                    `;
+                    el.className = "flex justify-between items-center py-2 border-b border-slate-700/50 last:border-0";
+                    el.innerHTML = `<span class="text-slate-300 text-sm font-medium">${bahan.namaAsli}</span><span class="text-white font-bold text-lg">${formatNumber(bahan.total)} <span class="text-slate-500 text-xs font-normal">gram</span></span>`;
                     grandTotalList.appendChild(el);
                 });
             }
         }
 
-        // --- 4. Event Listeners ---
-        document.getElementById('add-barang-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const input = document.getElementById('input-nama-barang');
-            const nama = input.value.trim();
-            if (nama) {
-                const id = 'ITEM_' + Date.now();
-                db[id] = { nama: nama, bahan: [] };
-                saveDB();
-                document.getElementById('select-barang-settings').value = id;
-                input.value = '';
-                showToast(`"${nama}" ditambahkan.`);
-            }
+        // Form Handlers (Bahan Baku)
+        document.getElementById('add-barang-form').addEventListener('submit', e => {
+            e.preventDefault(); const input = document.getElementById('input-nama-barang'); const nama = input.value.trim();
+            if (nama) { db['ITEM_' + Date.now()] = { nama: nama, bahan: [] }; saveDB(); input.value = ''; showToast(`"${nama}" berhasil dibuat.`); }
         });
 
-        document.getElementById('add-bahan-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const idBarang = document.getElementById('select-barang-settings').value;
-            const namaBahan = document.getElementById('input-nama-bahan').value.trim();
-            const qtyBahan = parseFloat(document.getElementById('input-jumlah-bahan').value);
-
-            if (!idBarang) { showToast("Pilih barang terlebih dahulu!"); return; }
-
-            if (namaBahan && qtyBahan > 0) {
-                db[idBarang].bahan.push({ nama: namaBahan, qty: qtyBahan });
-                saveDB();
-                document.getElementById('input-nama-bahan').value = '';
-                document.getElementById('input-jumlah-bahan').value = '';
-                document.getElementById('input-nama-bahan').focus();
-                showToast(`Bahan ditambahkan ke resep.`);
-            }
+        document.getElementById('add-bahan-form').addEventListener('submit', e => {
+            e.preventDefault(); const idBarang = document.getElementById('select-barang-settings').value; const namaBahan = document.getElementById('input-nama-bahan').value.trim(); const qtyBahan = parseFloat(document.getElementById('input-jumlah-bahan').value);
+            if (!idBarang) { showToast("Pilih barang!"); return; }
+            if (namaBahan && qtyBahan > 0) { db[idBarang].bahan.push({ nama: namaBahan, qty: qtyBahan }); saveDB(); document.getElementById('input-nama-bahan').value = ''; document.getElementById('input-jumlah-bahan').value = ''; showToast(`Bahan ditambahkan.`); }
         });
 
-        // Form Tambah ke Kalkulator Produksi
-        document.getElementById('calc-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const idBarang = document.getElementById('calc-barang').value;
-            const jumlahInput = parseFloat(document.getElementById('calc-jumlah').value);
-            const satuan = document.getElementById('calc-satuan').value;
-
-            if (!idBarang || !db[idBarang]) {
-                showToast("Pilih barang dari daftar.");
-                return;
-            }
-
-            // Hitung Kg untuk dasar perkalian
-            let qtyKg = jumlahInput;
-            if (satuan === 'gram') qtyKg = jumlahInput / 1000;
-
-            // Tambahkan ke Cart
-            productionCart.push({
-                idBarang: idBarang,
-                qtyInput: jumlahInput,
-                satuan: satuan === 'kg' ? 'Kg' : 'Gram',
-                qtyKg: qtyKg
-            });
-
-            // Kosongkan input jumlah agar mudah menambah barang lain
-            document.getElementById('calc-jumlah').value = '';
-            
-            showToast(`${db[idBarang].nama} ditambahkan ke daftar produksi.`);
-            renderKalkulator();
+        document.getElementById('calc-form').addEventListener('submit', e => {
+            e.preventDefault(); const idBarang = document.getElementById('calc-barang').value; const jumlahInput = parseFloat(document.getElementById('calc-jumlah').value); const satuan = document.getElementById('calc-satuan').value;
+            if (!idBarang || !db[idBarang]) return;
+            let qtyKg = satuan === 'gram' ? jumlahInput / 1000 : jumlahInput;
+            productionCart.push({ idBarang, qtyInput: jumlahInput, satuan: satuan === 'kg' ? 'Kg' : 'Gram', qtyKg });
+            document.getElementById('calc-jumlah').value = ''; showToast(`Masuk ke rencana produksi.`); renderKalkulator();
         });
 
-        // --- 5. Fungsi Global Hapus & Cart ---
-        window.hapusBarang = function(id) {
-            if(confirm(`Yakin ingin menghapus "${db[id].nama}"?`)) {
-                delete db[id];
-                saveDB();
-                showToast("Barang dihapus.");
-            }
-        };
+        document.getElementById('edit-bahan-form').addEventListener('submit', e => {
+            e.preventDefault(); const idBarang = document.getElementById('edit-id-barang').value; const indexBahan = document.getElementById('edit-index-bahan').value; const newNama = document.getElementById('edit-nama-bahan').value.trim(); const newQty = parseFloat(document.getElementById('edit-jumlah-bahan').value);
+            if (newNama && newQty > 0) { db[idBarang].bahan[indexBahan] = { nama: newNama, qty: newQty }; saveDB(); closeEditModal(); showToast("Bahan diperbarui."); }
+        });
 
-        window.hapusBahan = function(idBarang, indexBahan) {
-            db[idBarang].bahan.splice(indexBahan, 1);
-            saveDB();
+        window.editBarang = id => { const newName = prompt("Ubah Nama Barang:", db[id].nama); if (newName && newName.trim() !== "") { db[id].nama = newName.trim(); saveDB(); } };
+        window.editBahan = (idBarang, indexBahan) => {
+            const bahan = db[idBarang].bahan[indexBahan];
+            document.getElementById('edit-id-barang').value = idBarang; document.getElementById('edit-index-bahan').value = indexBahan;
+            document.getElementById('edit-nama-bahan').value = bahan.nama; document.getElementById('edit-jumlah-bahan').value = bahan.qty;
+            document.getElementById('edit-modal').classList.remove('hidden'); document.getElementById('edit-modal').classList.add('flex');
         };
+        window.closeEditModal = () => { document.getElementById('edit-modal').classList.add('hidden'); document.getElementById('edit-modal').classList.remove('flex'); };
+        window.hapusBarang = id => { if(confirm(`Hapus seluruh resep "${db[id].nama}"?`)) { delete db[id]; saveDB(); } };
+        window.hapusBahan = (idBarang, indexBahan) => { db[idBarang].bahan.splice(indexBahan, 1); saveDB(); };
+        window.hapusDariCart = index => { productionCart.splice(index, 1); renderKalkulator(); };
+        window.clearCart = () => { if(confirm("Bersihkan daftar rencana?")) { productionCart = []; renderKalkulator(); } };
 
-        window.hapusDariCart = function(index) {
-            productionCart.splice(index, 1);
-            renderKalkulator();
+        window.backupData = () => {
+            if (Object.keys(db).length === 0) { showToast("Tidak ada data."); return; }
+            const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], { type: "text/plain" }));
+            a.download = `Resep_Backup_${new Date().toISOString().slice(0, 10)}.txt`; a.click(); showToast("Backup Berhasil");
         };
-
-        window.clearCart = function() {
-            if(confirm("Hapus seluruh rencana produksi?")) {
-                productionCart = [];
-                renderKalkulator();
-            }
-        };
-
-        // --- 6. Backup & Restore ---
-        window.backupData = function() {
-            if (Object.keys(db).length === 0) { showToast("Tidak ada data untuk di-backup."); return; }
-            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `Backup_Resep_${new Date().toISOString().slice(0, 10)}.txt`;
-            a.click();
-            URL.revokeObjectURL(a.href);
-            showToast("Data berhasil di-backup (.txt)");
-        };
-
-        window.restoreData = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        window.restoreData = event => {
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 try {
                     const parsedData = JSON.parse(e.target.result);
                     if (typeof parsedData === 'object' && !Array.isArray(parsedData) && parsedData !== null) {
-                        if(confirm("Memulihkan akan menimpa data saat ini. Lanjutkan?")) {
-                            db = parsedData;
-                            // Update key local storage jika ganti versi
-                            localStorage.setItem('bahanBakuDB_v3', JSON.stringify(db));
-                            productionCart = []; // Bersihkan kalkulator karena datanya mungkin berbeda
-                            saveDB();
-                            showToast("Data berhasil dipulihkan!");
-                        }
+                        if(confirm("Tindakan ini menimpa data saat ini. Lanjut?")) { db = parsedData; localStorage.setItem('bahanBakuDB_v4', JSON.stringify(db)); productionCart = []; saveDB(); showToast("Restore Berhasil"); }
                     }
-                } catch (err) { showToast("Gagal. Pastikan file valid."); }
-                event.target.value = '';
-            };
-            reader.readAsText(file);
+                } catch (err) { showToast("Gagal! Format file salah."); } event.target.value = '';
+            }; reader.readAsText(file);
         };
 
-        // --- Init ---
-        renderSemua();
+        // ========================= MODULE 3: KALKULATOR LEMBURAN =========================
+        let lemburCart = [];
 
+        function clearLembur() { lemburCart = []; renderLembur(); }
+
+        function addLembur() {
+            const inputGaji = document.getElementById('lembur-gaji').value;
+            const sistem = document.getElementById('lembur-sistem').value;
+            const tipe = document.getElementById('lembur-tipe').value;
+            const jamText = document.getElementById('lembur-jam').value;
+            
+            if(!inputGaji || inputGaji <= 0) { showToast("Isi gaji bulanan!"); return; }
+            if(!jamText || parseFloat(jamText) <= 0) { showToast("Isi durasi jam!"); return; }
+
+            const gaji = parseFloat(inputGaji); const jam = parseFloat(jamText);
+            const upahSejam = gaji / 173;
+            let totalBayar = 0; let labelTarif = "";
+
+            if (tipe === 'kerja') {
+                if (jam <= 1) totalBayar = jam * 1.5 * upahSejam;
+                else totalBayar = (1 * 1.5 * upahSejam) + ((jam - 1) * 2 * upahSejam);
+                labelTarif = "Hari Kerja";
+            } 
+            else if (tipe === 'libur') {
+                if (sistem === '5') {
+                    if (jam <= 8) totalBayar = jam * 2 * upahSejam;
+                    else if (jam > 8 && jam <= 9) totalBayar = (8 * 2 * upahSejam) + ((jam - 8) * 3 * upahSejam);
+                    else if (jam > 9) totalBayar = (8 * 2 * upahSejam) + (1 * 3 * upahSejam) + ((jam - 9) * 4 * upahSejam);
+                    labelTarif = "Hari Libur (5HK)";
+                } else {
+                    if (jam <= 7) totalBayar = jam * 2 * upahSejam;
+                    else if (jam > 7 && jam <= 8) totalBayar = (7 * 2 * upahSejam) + ((jam - 7) * 3 * upahSejam);
+                    else if (jam > 8) totalBayar = (7 * 2 * upahSejam) + (1 * 3 * upahSejam) + ((jam - 8) * 4 * upahSejam);
+                    labelTarif = "Hari Libur (6HK)";
+                }
+            }
+            lemburCart.push({ tipe: labelTarif, jam: jam, bayar: totalBayar, upahDasar: upahSejam });
+            document.getElementById('lembur-jam').value = ''; renderLembur();
+        }
+
+        function renderLembur() {
+            const container = document.getElementById('lembur-result-container');
+            const list = document.getElementById('lembur-list');
+            const grandTotalEl = document.getElementById('lembur-grand-total');
+            const upahSejamEl = document.getElementById('lembur-upah-sejam');
+
+            if (lemburCart.length === 0) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden'); list.innerHTML = '';
+            
+            let grandTotal = 0; let basisUpah = lemburCart[0].upahDasar;
+
+            lemburCart.forEach((item, index) => {
+                grandTotal += item.bayar;
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center border-b border-slate-700/50 py-2 last:border-0";
+                div.innerHTML = `
+                    <div><p class="text-sm font-semibold text-slate-200">${item.tipe}</p><p class="text-xs text-primary-400 font-medium">${item.jam} Jam</p></div>
+                    <div class="flex items-center gap-3"><span class="font-bold text-white tracking-wide">${formatRupiah(item.bayar)}</span><button onclick="hapusLemburItem(${index})" class="text-slate-500 hover:text-red-400"><i class="ph ph-trash"></i></button></div>
+                `;
+                list.appendChild(div);
+            });
+
+            grandTotalEl.innerText = formatRupiah(grandTotal);
+            upahSejamEl.innerText = "Upah per jam: " + formatRupiah(basisUpah);
+        }
+
+        function hapusLemburItem(index) { lemburCart.splice(index, 1); renderLembur(); }
+
+        // ========================= INIT APP =========================
+        renderSemuaBahanBaku();
+        convertWeight(); 
+        updateCalcDisplay();
     </script>
 </body>
 </html>
