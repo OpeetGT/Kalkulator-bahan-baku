@@ -158,6 +158,9 @@
             <button onclick="switchModule('module-lembur')" id="nav-module-lembur" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all">
                 <i class="ph ph-money text-xl"></i> Kalkulator Lemburan
             </button>
+            <button onclick="switchModule('module-ai')" id="nav-module-ai" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all mt-4 border border-indigo-100 bg-indigo-50/50">
+                <i class="ph ph-sparkle text-xl text-indigo-600"></i> Asisten AI Bisnis
+            </button>
         </nav>
         <div class="p-6 mt-auto">
             <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center">
@@ -465,7 +468,10 @@
                             <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Buat Barang</h2>
                             <form id="add-barang-form" class="flex gap-2">
                                 <input type="text" id="input-nama-barang" placeholder="Nama Barang Jadi" class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-2.5 px-4 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all outline-none text-sm font-medium" required>
-                                <button type="submit" class="bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">Buat</button>
+                                <button type="submit" class="bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm shadow-sm">Buat</button>
+                                <button type="button" onclick="generateResepAI()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white font-bold py-2.5 px-3 rounded-xl transition-colors text-sm flex items-center justify-center shadow-sm" title="Generate Resep Otomatis via AI">
+                                    <i class="ph ph-sparkle text-lg"></i>
+                                </button>
                             </form>
                         </div>
 
@@ -545,26 +551,45 @@
                             <i class="ph ph-plus font-bold"></i> Tambah
                         </button>
                     </div>
+                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Rp 0</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Hasil Hitung Lembur (Premium Light Card untuk Kontras yang Jauh Lebih Baik) -->
-            <div id="lembur-result-container" class="bg-white rounded-3xl shadow-float border border-primary-100 p-6 sm:p-8 hidden relative overflow-hidden">
-                <div class="absolute right-0 top-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl"></div>
+        <!-- ==================== MODULE 4: ASISTEN AI ==================== -->
+        <div id="module-ai" class="main-module space-y-6 flex flex-col h-[75vh]">
+            <div class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-4 flex-1 flex flex-col relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
-                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Rincian Bayaran</h3>
-                    <button onclick="clearLembur()" class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">Reset Total</button>
-                </div>
-                
-                <div id="lembur-list" class="space-y-3 mb-6 relative z-10"></div>
-                
-                <div class="pt-5 border-t border-slate-100 flex justify-between items-end relative z-10 bg-slate-50 p-4 rounded-2xl">
-                    <div>
-                        <span class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Estimasi Diterima</span>
-                        <p class="text-xs text-primary-600 mt-1 font-semibold" id="lembur-upah-sejam"></p>
+                <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100 relative z-10">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                        <i class="ph ph-robot text-2xl"></i>
                     </div>
-                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Rp 0</span>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Gemini Assistant</h3>
+                        <p class="text-xs text-slate-500 font-medium">Terhubung dengan internet (Live Search)</p>
+                    </div>
+                </div>
+
+                <!-- Chat Area -->
+                <div id="ai-chat-box" class="flex-1 overflow-y-auto pr-2 mb-4 space-y-4 relative z-10 scrollbar-hide flex flex-col">
+                    <!-- Pesan Awal AI -->
+                    <div class="flex justify-start mb-2">
+                        <div class="bg-slate-50 text-slate-700 rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100 max-w-[90%] text-sm leading-relaxed">
+                            <div class="flex items-center gap-2 mb-1.5 text-indigo-600 font-bold text-xs"><i class="ph ph-sparkle"></i> Asisten AI</div>
+                            Halo! Saya Asisten AI cerdas Anda. Ada yang bisa saya bantu terkait perhitungan modal bisnis, inspirasi resep, atau aturan ketenagakerjaan hari ini?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="relative z-10 mt-auto pt-2 border-t border-slate-100">
+                    <div class="flex items-center bg-slate-50 rounded-2xl border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white p-1.5 pl-4 transition-all">
+                        <input type="text" id="ai-chat-input" placeholder="Tanya seputar bisnis atau rumus..." class="flex-1 bg-transparent border-0 outline-none text-sm py-2.5 text-slate-800 font-medium" onkeypress="if(event.key === 'Enter') sendMessageAI()">
+                        <button onclick="sendMessageAI()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm">
+                            <i class="ph ph-paper-plane-right font-bold"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -624,7 +649,12 @@
                 btn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold text-slate-600 hover:bg-slate-50 transition-all";
             });
             const activeBtn = document.getElementById('nav-' + moduleName);
-            activeBtn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-bold bg-primary-50 text-primary-600 transition-all";
+            
+            if(moduleName === 'module-ai') {
+                 activeBtn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-bold bg-indigo-50 text-indigo-600 transition-all border border-indigo-100 mt-4";
+            } else {
+                 activeBtn.className = "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-bold bg-primary-50 text-primary-600 transition-all";
+            }
             
             // Switch Modules
             document.querySelectorAll('.main-module').forEach(el => el.classList.remove('active'));
@@ -643,6 +673,9 @@
             } else if (moduleName === 'module-lembur') {
                 title.innerText = 'Hitung Lembur';
                 icon.className = 'ph ph-money text-lg font-bold';
+            } else if (moduleName === 'module-ai') {
+                title.innerText = 'Asisten AI Bisnis';
+                icon.className = 'ph ph-sparkle text-lg font-bold text-indigo-600';
             }
 
             toggleSidebar(); // Close sidebar after selecting
@@ -1042,6 +1075,161 @@
         }
 
         function hapusLemburItem(index) { lemburCart.splice(index, 1); renderLembur(); }
+
+        // ========================= MODULE 4: ASISTEN AI (GEMINI) =========================
+        
+        // 1. Generate Resep Otomatis (Structured Output JSON)
+        async function generateResepAI() {
+            const inputElem = document.getElementById('input-nama-barang');
+            const namaBarang = inputElem.value.trim();
+            
+            if (!namaBarang) {
+                showToast("Isi nama barang terlebih dahulu! (Contoh: Roti Cokelat)");
+                inputElem.focus();
+                return;
+            }
+
+            showToast("✨ AI sedang meracik resep... Mohon tunggu.");
+            
+            const payload = {
+                contents: [{ parts: [{ text: `Berikan resep bahan baku manufaktur/kuliner standar untuk membuat tepat 1 kg ${namaBarang}.` }] }],
+                systemInstruction: { parts: [{ text: "Kamu adalah ahli kuliner dan pakar manufaktur industri. Berikan resep dengan akurat. Jumlah harus dikonversi sepenuhnya ke dalam satuan gram berupa angka." }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "nama": { type: "STRING", description: "Nama bahan baku (contoh: Tepung Terigu Protein Tinggi)" },
+                                "qty": { type: "NUMBER", description: "Jumlah bahan baku dalam satuan gram" }
+                            },
+                            required: ["nama", "qty"]
+                        }
+                    }
+                }
+            };
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const bahanArray = JSON.parse(jsonText);
+                    
+                    const id = 'ITEM_' + Date.now();
+                    db[id] = { nama: namaBarang + " (Resep AI)", bahan: bahanArray };
+                    saveDB();
+                    
+                    document.getElementById('select-barang-settings').value = id;
+                    inputElem.value = '';
+                    showToast(`✅ Resep ${namaBarang} berhasil dibuat oleh AI!`);
+                } else {
+                    showToast("Gagal memproses respons dari AI.");
+                }
+            } catch (error) {
+                console.error("AI Error:", error);
+                showToast("Terjadi kesalahan saat memanggil AI. Periksa koneksi.");
+            }
+        }
+
+        // 2. Chat Asisten AI (Grounded Google Search)
+        let aiChatHistory = [];
+
+        async function sendMessageAI() {
+            const inputElem = document.getElementById('ai-chat-input');
+            const userText = inputElem.value.trim();
+            if(!userText) return;
+
+            // Render User Message
+            renderChatMessage('user', userText);
+            inputElem.value = '';
+            
+            // Push to history
+            aiChatHistory.push({ role: "user", parts: [{ text: userText }] });
+
+            const payload = {
+                contents: aiChatHistory,
+                systemInstruction: { parts: [{ text: "Anda adalah Asisten Bisnis, Ahli HRD, dan Ahli Kalkulasi di Indonesia. Jawab pertanyaan pengguna dengan ringkas, profesional, sangat cerdas, dan format teks dengan baik. Gunakan bahasa Indonesia. Anda bebas menggunakan format list/bulleting." }] },
+                tools: [{ "google_search": {} }] // Enable Google Search Grounding for up-to-date labor laws/prices
+            };
+
+            // Render Loading Bubble
+            const chatBox = document.getElementById('ai-chat-box');
+            const loadingId = 'loading-' + Date.now();
+            chatBox.insertAdjacentHTML('beforeend', `
+                <div id="${loadingId}" class="flex justify-start mb-2">
+                    <div class="bg-slate-50 text-slate-500 rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100 flex items-center gap-2">
+                        <i class="ph ph-spinner-gap animate-spin text-xl text-indigo-500"></i> <span class="text-xs font-medium">AI sedang berpikir...</span>
+                    </div>
+                </div>
+            `);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                // Hapus Loading Bubble
+                const loadingElem = document.getElementById(loadingId);
+                if(loadingElem) loadingElem.remove();
+
+                if (result.candidates && result.candidates.length > 0) {
+                    const aiResponse = result.candidates[0].content.parts[0].text;
+                    aiChatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                    renderChatMessage('ai', aiResponse);
+                } else {
+                    renderChatMessage('ai', "Maaf, saya tidak dapat merespons permintaan tersebut saat ini.");
+                }
+            } catch (error) {
+                console.error("AI Error:", error);
+                const loadingElem = document.getElementById(loadingId);
+                if(loadingElem) loadingElem.remove();
+                renderChatMessage('ai', "Terjadi kesalahan jaringan saat mencoba menghubungi AI.");
+            }
+        }
+
+        function renderChatMessage(sender, text) {
+            const chatBox = document.getElementById('ai-chat-box');
+            
+            // Basic formatting untuk Bold dan Linebreaks
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+
+            if (sender === 'user') {
+                chatBox.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-end mb-2">
+                        <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm max-w-[85%] text-sm font-medium leading-relaxed">
+                            ${formattedText}
+                        </div>
+                    </div>
+                `);
+            } else {
+                chatBox.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-start mb-2">
+                        <div class="bg-slate-50 text-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-slate-100 max-w-[90%] text-sm leading-relaxed">
+                            <div class="flex items-center gap-2 mb-1.5 text-indigo-600 font-bold text-xs"><i class="ph ph-sparkle"></i> Asisten AI</div>
+                            ${formattedText}
+                        </div>
+                    </div>
+                `);
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
         // ========================= INIT APP =========================
         renderSemuaBahanBaku();
