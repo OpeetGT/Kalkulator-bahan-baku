@@ -577,12 +577,35 @@
                 
                 <div id="lembur-list" class="space-y-3 mb-6 relative z-10"></div>
                 
-                <div class="pt-5 border-t border-slate-200 flex justify-between items-end relative z-10 bg-slate-50 p-5 rounded-2xl">
-                    <div>
-                        <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">Estimasi Diterima</span>
-                        <p class="text-xs text-primary-600 mt-1 font-bold" id="lembur-upah-sejam"></p>
+                <!-- Summary / Struk Gaji -->
+                <div class="pt-5 border-t border-slate-200 relative z-10">
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        
+                        <!-- Rincian -->
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Total Jam Lembur</span>
+                            <span id="lembur-total-jam" class="font-bold text-slate-800">0 Jam</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Gaji Pokok / UMK</span>
+                            <span id="lembur-gaji-pokok" class="font-bold text-slate-800">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Total Uang Lembur</span>
+                            <span id="lembur-grand-total" class="font-bold text-primary-600">Rp 0</span>
+                        </div>
+                        
+                        <div class="border-t border-slate-200 border-dashed my-3"></div>
+                        
+                        <!-- Take Home Pay -->
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <span class="text-slate-800 text-xs font-bold uppercase tracking-wider">Total Diterima</span>
+                                <p class="text-[10px] text-slate-400 mt-1 font-medium tracking-wide" id="lembur-upah-sejam"></p>
+                            </div>
+                            <span id="lembur-take-home-pay" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Rp 0</span>
+                        </div>
                     </div>
-                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">Rp 0</span>
                 </div>
             </div>
             
@@ -1115,14 +1138,24 @@
             const list = document.getElementById('lembur-list');
             const grandTotalEl = document.getElementById('lembur-grand-total');
             const upahSejamEl = document.getElementById('lembur-upah-sejam');
+            
+            // Elemen Tambahan UI Baru
+            const totalJamEl = document.getElementById('lembur-total-jam');
+            const gajiPokokEl = document.getElementById('lembur-gaji-pokok');
+            const takeHomePayEl = document.getElementById('lembur-take-home-pay');
 
             if (lemburCart.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden'); list.innerHTML = '';
             
-            let grandTotal = 0; let basisUpah = lemburCart[0].upahDasar;
+            let grandTotalLembur = 0; 
+            let basisUpah = lemburCart[0].upahDasar;
+            let gajiPokok = basisUpah * 173; // Mengambil kembali nilai gaji pokok awal
+            let totalJam = 0;
 
             lemburCart.forEach((item, index) => {
-                grandTotal += item.bayar;
+                grandTotalLembur += item.bayar;
+                totalJam += item.jam;
+                
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center border-b border-slate-200 py-3 last:border-0";
                 div.innerHTML = `
@@ -1132,8 +1165,15 @@
                 list.appendChild(div);
             });
 
-            grandTotalEl.innerText = formatRupiah(grandTotal);
-            upahSejamEl.innerText = "*Upah per jam: " + formatRupiah(basisUpah);
+            // Update UI Struk Gaji
+            totalJamEl.innerText = totalJam + " Jam";
+            gajiPokokEl.innerText = formatRupiah(gajiPokok);
+            grandTotalEl.innerText = "+ " + formatRupiah(grandTotalLembur);
+            
+            const takeHomePay = gajiPokok + grandTotalLembur;
+            takeHomePayEl.innerText = formatRupiah(takeHomePay);
+            
+            upahSejamEl.innerText = "*Basis upah: " + formatRupiah(basisUpah) + "/jam";
         }
 
         function hapusLemburItem(index) { lemburCart.splice(index, 1); renderLembur(); }
