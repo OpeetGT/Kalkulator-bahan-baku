@@ -551,9 +551,31 @@
                             <i class="ph ph-plus font-bold"></i> Tambah
                         </button>
                     </div>
-                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Rp 0</span>
                 </div>
             </div>
+            
+            <!-- Hasil Hitung Lembur (Terang & Jelas) -->
+            <div id="lembur-result-container" class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 sm:p-8 hidden relative overflow-hidden">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Rincian Bayaran</h3>
+                    <div class="flex gap-2">
+                        <button onclick="backupLembur()" class="text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-primary-200 shadow-sm"><i class="ph ph-download-simple"></i> Backup</button>
+                        <label class="text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-primary-200 shadow-sm cursor-pointer"><i class="ph ph-upload-simple"></i> Restore<input type="file" accept=".txt" class="hidden" onchange="restoreLembur(event)"></label>
+                        <button onclick="clearLembur()" class="text-xs font-bold text-red-500 hover:bg-red-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-sm">Reset</button>
+                    </div>
+                </div>
+                
+                <div id="lembur-list" class="space-y-3 mb-6 relative z-10"></div>
+                
+                <div class="pt-5 border-t border-slate-200 flex justify-between items-end relative z-10 bg-slate-50 p-5 rounded-2xl">
+                    <div>
+                        <span class="text-slate-500 text-xs font-bold uppercase tracking-wider">Estimasi Diterima</span>
+                        <p class="text-xs text-primary-600 mt-1 font-bold" id="lembur-upah-sejam"></p>
+                    </div>
+                    <span id="lembur-grand-total" class="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">Rp 0</span>
+                </div>
+            </div>
+            
         </div>
 
         <!-- ==================== MODULE 4: ASISTEN AI ==================== -->
@@ -1012,6 +1034,36 @@
         let lemburCart = [];
 
         function clearLembur() { lemburCart = []; renderLembur(); }
+
+        window.backupLembur = () => {
+            if (lemburCart.length === 0) { showToast("Tidak ada data lembur."); return; }
+            const a = document.createElement("a"); 
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(lemburCart, null, 2)], { type: "text/plain" }));
+            a.download = `Lembur_Backup_${new Date().toISOString().slice(0, 10)}.txt`; 
+            a.click(); 
+            showToast("Backup Lembur Berhasil");
+        };
+
+        window.restoreLembur = event => {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    if (Array.isArray(parsedData)) {
+                        if(confirm("Tindakan ini menimpa data lembur saat ini. Lanjut?")) { 
+                            lemburCart = parsedData; 
+                            renderLembur(); 
+                            showToast("Restore Lembur Berhasil"); 
+                        }
+                    } else {
+                        showToast("Format file lembur salah.");
+                    }
+                } catch (err) { showToast("Gagal! Format file salah."); } 
+                event.target.value = '';
+            }; 
+            reader.readAsText(file);
+        };
 
         function addLembur() {
             const inputGaji = document.getElementById('lembur-gaji').value;
