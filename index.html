@@ -552,17 +552,27 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Tombol Backup & Restore Lemburan (UI Baru) -->
+                <div class="mt-8 pt-6 border-t border-slate-100 flex gap-3">
+                    <button onclick="backupLembur()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-2xl transition-colors shadow-sm text-sm flex items-center justify-center gap-2">
+                        <i class="ph ph-download-simple text-xl"></i> Backup Data
+                    </button>
+                    <label class="flex-1 bg-primary-50 border border-primary-100 text-primary-600 hover:bg-primary-100 font-bold py-3.5 px-4 rounded-2xl transition-colors shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2">
+                        <i class="ph ph-upload-simple text-xl"></i> Restore Data
+                        <input type="file" accept=".txt" class="hidden" onchange="restoreLembur(event)">
+                    </label>
+                </div>
+
             </div>
             
             <!-- Hasil Hitung Lembur (Terang & Jelas) -->
             <div id="lembur-result-container" class="bg-white rounded-3xl shadow-soft border border-slate-100/50 p-6 sm:p-8 hidden relative overflow-hidden">
                 <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 relative z-10">
                     <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Rincian Bayaran</h3>
-                    <div class="flex gap-2">
-                        <button onclick="backupLembur()" class="text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-primary-200 shadow-sm"><i class="ph ph-download-simple"></i> Backup</button>
-                        <label class="text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-primary-200 shadow-sm cursor-pointer"><i class="ph ph-upload-simple"></i> Restore<input type="file" accept=".txt" class="hidden" onchange="restoreLembur(event)"></label>
-                        <button onclick="clearLembur()" class="text-xs font-bold text-red-500 hover:bg-red-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-sm">Reset</button>
-                    </div>
+                    <button onclick="clearLembur()" class="text-xs font-bold text-red-500 hover:bg-red-50 transition-colors bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-sm flex items-center gap-1">
+                        <i class="ph ph-trash"></i> Reset
+                    </button>
                 </div>
                 
                 <div id="lembur-list" class="space-y-3 mb-6 relative z-10"></div>
